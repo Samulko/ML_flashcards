@@ -1,0 +1,68 @@
+{
+  "assignment8_flashcards": [
+    {
+      "front": "What is the variance formula for Random Forest predictor and what does it tell us about ensemble benefits?",
+      "back": "Random Forest variance = (ρ + (1-ρ)/B) × σ², where ρ is tree correlation, B is number of trees, σ² is individual tree variance",
+      "formula": "\\[\\text{Var}(\\hat{f}_B) = \\left(\\rho + \\frac{1-\\rho}{B}\\right)\\sigma^2\\]",
+      "source": "Assignment 8 - Random Forest Theory",
+      "tags": "random-forest variance ensemble correlation",
+      "extra": "This formula reveals why ensembles work: as B increases, variance decreases toward ρσ². The correlation term ρ represents the fundamental limit - even infinite trees can't reduce variance below ρσ². This explains why Random Forest uses feature randomization to decorrelate trees (reduce ρ), making the ensemble more effective than simple bagging."
+    },
+    {
+      "front": "How does Random Forest reduce correlation between trees and why is this crucial?",
+      "back": "Random Forest selects random subset of features at each split, decorrelating trees by preventing dominant features from being used consistently across all trees",
+      "formula": "",
+      "source": "Assignment 8 - Random Forest",
+      "tags": "random-forest decorrelation feature-selection ensemble",
+      "extra": "Think of it like asking different experts who each specialize in different areas. If all experts focus on the same information (high correlation), their combined opinion isn't much better than one expert. But if each expert considers different aspects (low correlation), their combined wisdom is much more reliable. Random Forest achieves this by randomly restricting which features each tree can consider at each split."
+    },
+    {
+      "front": "What is a decision stump and why is it the preferred weak learner for AdaBoost?",
+      "back": "A decision stump is a decision tree with maximum depth 1 (single split). It's ideal for AdaBoost because it's simple, fast to train, and provides the 'weak learning' property",
+      "formula": "",
+      "source": "Assignment 8 - AdaBoost",
+      "tags": "adaboost decision-stump weak-learner boosting",
+      "extra": "Decision stumps are intentionally simple - they make decisions based on just one feature and one threshold. This simplicity is actually a strength in AdaBoost because: (1) they train quickly on reweighted data, (2) they rarely overfit, (3) they provide diverse perspectives when combined, and (4) they satisfy the weak learning assumption (slightly better than random guessing). Complex trees would defeat the purpose of iterative improvement."
+    },
+    {
+      "front": "How does AdaBoost calculate the weight α_m for each weak learner and what does it represent?",
+      "back": "α_m = (1/2) × ln((1-ε_m)/ε_m), where ε_m is the weighted error rate. Higher α means more influence in final ensemble",
+      "formula": "\\[\\alpha_m = \\frac{1}{2}\\ln\\left(\\frac{1-\\varepsilon_m}{\\varepsilon_m}\\right)\\]",
+      "source": "Assignment 8 - AdaBoost",
+      "tags": "adaboost alpha-weight ensemble weighted-voting",
+      "extra": "This formula ensures that better classifiers get exponentially more influence. When error ε→0, α→∞ (perfect classifier dominates). When ε=0.5 (random guessing), α=0 (no influence). When ε>0.5, α<0 (classifier is worse than random, so we flip its predictions). This creates a natural quality-based voting system where good classifiers have strong voices and bad ones are ignored or reversed."
+    },
+    {
+      "front": "How does AdaBoost update sample weights and why does this improve learning?",
+      "back": "Weights are updated as w_i^(m+1) = w_i^(m) × exp(-α_m × y_i × G_m(x_i)). Misclassified samples get increased weights, correctly classified get decreased weights",
+      "formula": "\\[w_i^{(m+1)} = w_i^{(m)} \\cdot \\exp(-\\alpha_m y_i G_m(x_i))\\]",
+      "source": "Assignment 8 - AdaBoost",
+      "tags": "adaboost weight-update adaptive-learning sequential",
+      "extra": "This is like a teacher focusing more attention on struggling students. When y_i × G_m(x_i) > 0 (correct prediction), the weight decreases. When y_i × G_m(x_i) < 0 (incorrect prediction), the weight increases exponentially. This forces the next weak learner to focus on the 'hard' examples that previous learners got wrong, creating a sequential learning process where each classifier specializes in different challenging cases."
+    },
+    {
+      "front": "What is the key difference between Random Forest (bagging) and AdaBoost (boosting) learning strategies?",
+      "back": "Random Forest trains trees independently in parallel on different data subsets. AdaBoost trains learners sequentially, where each focuses on mistakes of previous learners",
+      "formula": "",
+      "source": "Assignment 8 - Ensemble Comparison",
+      "tags": "ensemble bagging boosting parallel sequential",
+      "extra": "Think of Random Forest as a committee of independent experts, each analyzing different evidence and voting equally. AdaBoost is like a relay team where each member fixes the mistakes of the previous one, with better performers getting stronger voices. Random Forest reduces variance through averaging, while AdaBoost reduces bias by focusing on hard cases. Random Forest is more robust to noise; AdaBoost can achieve lower training error but may overfit."
+    },
+    {
+      "front": "What does 'polarity' mean in the AdaBoost decision stump context and how does it affect classification?",
+      "back": "Polarity determines which side of the threshold gets +1 label. Polarity=+1: left/below threshold → +1. Polarity=-1: left/below threshold → -1",
+      "formula": "",
+      "source": "Assignment 8 - AdaBoost Implementation",
+      "tags": "adaboost decision-stump polarity threshold classification",
+      "extra": "Polarity is like choosing which way to orient a decision boundary. For a vertical line (x₁ threshold), polarity=+1 means 'left side is positive class', while polarity=-1 means 'right side is positive class'. This flexibility allows each stump to find the best orientation for separating classes. In the helper script visualization, red points are +1 class and blue points are -1 class, making it easy to see which polarity works better for each potential split."
+    },
+    {
+      "front": "Why might different initial stumps in AdaBoost lead to different final ensemble classifiers?",
+      "back": "Each initial stump creates different weight distributions, causing subsequent learners to focus on different misclassified examples, leading to distinct learning paths and decision boundaries",
+      "formula": "",
+      "source": "Assignment 8 - AdaBoost Paths",
+      "tags": "adaboost initialization path-dependence ensemble diversity",
+      "extra": "AdaBoost is like a snowball effect - the first choice determines which mistakes get emphasized, which shapes what the second learner focuses on, and so on. Even if multiple stumps have the same initial error rate, they misclassify different points. This creates a butterfly effect where small initial differences lead to dramatically different final classifiers. It's why AdaBoost can find multiple valid solutions to the same problem, each with its own strengths and decision boundary characteristics."
+    }
+  ]
+}

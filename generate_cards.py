@@ -5,9 +5,12 @@ Creates .apkg files ready for import into Anki
 
 import os
 import csv
+import json
 from pathlib import Path
 import genanki
+import re
 from card_templates import ML_CARD_MODEL, FORMULA_CARD_MODEL, create_ml_note, create_formula_note
+import re
 from content_extractor import MLContentExtractor
 
 class MLFlashcardGenerator:
@@ -27,17 +30,21 @@ class MLFlashcardGenerator:
         
     def generate_all_cards(self):
         """Main entry point - generate all flashcard decks"""
-        print("🚀 Starting ML flashcard generation...")
+        print("Starting ML flashcard generation...")
         
         # Focus on manually curated high-quality cards
-        print("🎯 Generating high-quality curated cards...")
+        print("Generating high-quality curated cards...")
         
         # Generate comprehensive manual cards based on exam topics
         manual_cards = self._generate_comprehensive_cards()
-        print(f"✅ Generated {len(manual_cards)} curated cards")
+        print(f"Generated {len(manual_cards)} curated cards")
+        
+        # Load assignment cards from JSON files
+        assignment_cards = self._load_assignment_cards()
+        print(f"Loaded {len(assignment_cards)} assignment cards")
         
         # Combine all cards into single deck
-        all_cards = manual_cards
+        all_cards = manual_cards + assignment_cards
         
         # Create and save single Anki deck
         self._create_single_anki_deck(all_cards)
@@ -45,8 +52,8 @@ class MLFlashcardGenerator:
         # Save intermediate CSV files for review
         self._save_csv_files(all_cards)
         
-        print(f"🎉 Generated {len(all_cards)} total cards in single deck")
-        print(f"📁 Output files saved to: {self.output_dir}")
+        print(f"Generated {len(all_cards)} total cards in single deck")
+        print(f"Output files saved to: {self.output_dir}")
         
     
     def _generate_comprehensive_cards(self):
@@ -59,7 +66,14 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'PCA dimensionality-reduction',
-                'extra': 'ANALOGY: Like finding the best camera angles to photograph a 3D sculpture - you want views that capture the most detail with fewest shots. PCA finds the "best angles" (principal components) in your data space. CONNECTIONS: Related to SVD (Singular Value Decomposition), eigendecomposition. Used before clustering (curse of dimensionality), neural networks (feature extraction), and visualization. INTUITION: High-dimensional data often lies on lower-dimensional manifolds - PCA finds linear approximations of these manifolds. Essential for avoiding curse of dimensionality in high-dim spaces.'
+                'extra': '''ANALOGY: Like finding the best camera angles to photograph a 3D sculpture - you want views that capture the most detail with fewest shots. PCA finds the "best angles" (principal components) in your data space.
+
+KEY INSIGHT: High-dimensional data often lies on lower-dimensional manifolds - PCA finds linear approximations of these manifolds. Essential for avoiding curse of dimensionality in high-dim spaces.
+
+CONNECTIONS:
+• Related to SVD (Singular Value Decomposition) and eigendecomposition
+• Used before clustering (curse of dimensionality)
+• Neural networks (feature extraction) and visualization'''
             },
             {
                 'front': 'What is the covariance matrix formula in PCA?',
@@ -67,7 +81,21 @@ class MLFlashcardGenerator:
                 'formula': '\\[Cov(X) = \\frac{1}{n}X^TX\\]',
                 'source': 'TOPICS.md',
                 'tags': 'PCA covariance-matrix formula',
-                'extra': 'INTUITION: Covariance matrix is like a "correlation map" showing how features move together. Diagonal elements = variance of each feature, off-diagonal = covariance between features. ANALOGY: Like a dance partner compatibility matrix - shows which dancers move in sync. MATHEMATICAL INSIGHT: X must be mean-centered first! Formula assumes X is (n×p) with rows=samples, cols=features. CONNECTIONS: Eigendecomposition of this matrix gives principal components. Related to correlation matrix (normalized version). PRACTICAL: Large covariances indicate redundant features - perfect candidates for dimensionality reduction.'
+                'extra': '''ANALOGY: Like a dance partner compatibility matrix - shows which dancers move in sync.
+
+KEY INSIGHT: Covariance matrix is a "correlation map" showing how features move together:
+• Diagonal elements = variance of each feature
+• Off-diagonal elements = covariance between features
+
+TECHNICAL NOTES:
+• X must be mean-centered first!
+• Formula assumes X is (n×p) with rows=samples, cols=features
+
+CONNECTIONS:
+• Eigendecomposition of this matrix gives principal components
+• Related to correlation matrix (normalized version)
+
+PRACTICAL: Large covariances indicate redundant features - perfect candidates for dimensionality reduction.'''
             },
             {
                 'front': 'How are principal components calculated?',
@@ -75,7 +103,24 @@ class MLFlashcardGenerator:
                 'formula': '\\[PC = X \\cdot v\\]',
                 'source': 'TOPICS.md',
                 'tags': 'PCA principal-components',
-                'extra': 'DEEP DIVE: Eigenvectors (v) are the "directions of maximum variance" - like finding the main axis of a football (not round!). PROCESS: 1) Mean-center data 2) Compute covariance matrix 3) Find eigenvalues/eigenvectors 4) Sort eigenvectors by eigenvalue (largest first) 5) Project data onto top-k eigenvectors. ANALOGY: Like rotating coordinate system to align with data\'s natural "grain" - imagine wood grain patterns. CONNECTIONS: Each PC is orthogonal (uncorrelated), first PC captures most variance. Used in: face recognition (eigenfaces), genomics, finance portfolio analysis.'
+                'extra': '''ANALOGY: Like rotating coordinate system to align with data\'s natural "grain" - imagine wood grain patterns. Eigenvectors are like finding the main axis of a football (not round!).
+
+PROCESS:
+1. Mean-center data
+2. Compute covariance matrix
+3. Find eigenvalues/eigenvectors
+4. Sort eigenvectors by eigenvalue (largest first)
+5. Project data onto top-k eigenvectors
+
+KEY PROPERTIES:
+• Each PC is orthogonal (uncorrelated)
+• First PC captures most variance
+• Eigenvectors (v) are "directions of maximum variance"
+
+APPLICATIONS:
+• Face recognition (eigenfaces)
+• Genomics
+• Finance portfolio analysis'''
             },
             {
                 'front': 'What does explained variance tell us in PCA?',
@@ -83,7 +128,16 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'PCA explained-variance',
-                'extra': 'DECISION MAKING: Like budgeting information - "How much of the story does each component tell?" RULE OF THUMB: Keep components until cumulative explained variance reaches 90-95%. ANALOGY: Imagine explaining a movie plot - first PC gives main storyline (most important), subsequent PCs add subplots and details. SCREE PLOT: Graph eigenvalues, look for "elbow" where slope flattens dramatically. CONNECTIONS: Related to eigenvalues (larger eigenvalue = more explained variance). Kaiser criterion: keep components with eigenvalue > 1. PRACTICAL: Trade-off between information retention and dimensionality reduction.'
+                'extra': '''ANALOGY: Like budgeting information - "How much of the story does each component tell?" Imagine explaining a movie plot - first PC gives main storyline (most important), subsequent PCs add subplots and details.
+
+DECISION RULES:
+• Keep components until cumulative explained variance reaches 90-95%
+• Kaiser criterion: keep components with eigenvalue > 1
+• Scree plot: look for "elbow" where slope flattens dramatically
+
+KEY INSIGHT: Related to eigenvalues (larger eigenvalue = more explained variance)
+
+PRACTICAL: Trade-off between information retention and dimensionality reduction.'''
             },
             
             # K-means Clustering (High Priority - New Topic)
@@ -93,7 +147,22 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'clustering k-means',
-                'extra': 'VISUAL ANALOGY: Like organizing a messy room by creating k boxes and putting similar items together, then adjusting box positions until items are closest to their own box. ASSUMPTIONS: Spherical clusters (like circles, not crescents), similar sizes, similar densities. FAILS when: Clusters are elongated, nested, or have vastly different sizes. CONNECTIONS: Related to EM algorithm (hard assignment version), Vector Quantization, Voronoi diagrams. PREPROCESSING: Scale features first! Distance-based algorithm sensitive to feature scales. APPLICATIONS: Market segmentation, image compression, gene sequencing.'
+                'extra': '''ANALOGY: Like organizing a messy room by creating k boxes and putting similar items together, then adjusting box positions until items are closest to their own box.
+
+ASSUMPTIONS:
+• Spherical clusters (like circles, not crescents)
+• Similar cluster sizes and densities
+
+FAILS WHEN:
+• Clusters are elongated, nested, or vastly different sizes
+
+PREPROCESSING: Scale features first! Distance-based algorithm sensitive to feature scales.
+
+CONNECTIONS:
+• Related to EM algorithm (hard assignment version)
+• Vector Quantization, Voronoi diagrams
+
+APPLICATIONS: Market segmentation, image compression, gene sequencing'''
             },
             {
                 'front': 'What is the K-means objective function?',
@@ -101,7 +170,22 @@ class MLFlashcardGenerator:
                 'formula': '\\[\\min \\sum_i \\sum_{x \\in C_i} ||x - \\mu_i||^2\\]',
                 'source': 'TOPICS.md',
                 'tags': 'k-means objective-function',
-                'extra': 'INTUITION: "Make each point as close as possible to its cluster center" - like minimizing total walking distance in a city with k meeting points. ALTERNATIVE NAMES: Within-Cluster Sum of Squares (WCSS), inertia, distortion. OPTIMIZATION: NP-hard problem! Lloyd\'s algorithm finds local optima. CONNECTIONS: Related to variance decomposition - minimizing within-cluster variance. Similar to expectation in EM algorithm. PRACTICAL: Elbow method plots WCSS vs k to find optimal number of clusters. DISTANCE: Usually Euclidean, but can use Manhattan, cosine similarity.'
+                'extra': '''INTUITION: "Make each point as close as possible to its cluster center" - like minimizing total walking distance in a city with k meeting points.
+
+ALTERNATIVE NAMES:
+• Within-Cluster Sum of Squares (WCSS)
+• Inertia
+• Distortion
+
+TECHNICAL NOTES:
+• NP-hard problem! Lloyd\'s algorithm finds local optima
+• Usually uses Euclidean distance, but can use Manhattan, cosine similarity
+
+CONNECTIONS:
+• Related to variance decomposition - minimizing within-cluster variance
+• Similar to expectation in EM algorithm
+
+PRACTICAL: Elbow method plots WCSS vs k to find optimal number of clusters'''
             },
             {
                 'front': 'How do you update centroids in K-means?',
@@ -109,7 +193,17 @@ class MLFlashcardGenerator:
                 'formula': '\\[\\mu_i = \\frac{1}{|C_i|} \\sum_{x \\in C_i} x\\]',
                 'source': 'TOPICS.md',
                 'tags': 'k-means centroid-update',
-                'extra': 'ANALOGY: Like finding the "center of mass" or "balance point" of each group - if you put weights at each data point, where would you place the fulcrum? MATHEMATICAL INSIGHT: Mean minimizes sum of squared distances - this is why K-means uses Euclidean distance. ALGORITHM STEP: This is the M-step (Maximization) in Lloyd\'s algorithm, alternates with E-step (assignment). CONVERGENCE: Centroids move less each iteration until they stabilize. Can also stop after fixed iterations or when objective function change is small. EMPTY CLUSTERS: Handle by reinitializing or using K-means++.'
+                'extra': '''ANALOGY: Like finding the "center of mass" or "balance point" of each group - if you put weights at each data point, where would you place the fulcrum?
+
+MATHEMATICAL INSIGHT: Mean minimizes sum of squared distances - this is why K-means uses Euclidean distance.
+
+ALGORITHM ROLE: This is the M-step (Maximization) in Lloyd\'s algorithm, alternates with E-step (assignment).
+
+CONVERGENCE:
+• Centroids move less each iteration until they stabilize
+• Can also stop after fixed iterations or when objective function change is small
+
+EMPTY CLUSTERS: Handle by reinitializing or using K-means++'''
             },
             {
                 'front': 'What are the two steps of Lloyd\'s K-means algorithm?',
@@ -117,7 +211,19 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'k-means lloyds-algorithm',
-                'extra': 'DANCE ANALOGY: Like a dance where partners (points) choose their favorite dancer (centroid), then dancers move to the center of their group, repeat until everyone is happy. E-STEP (Assignment): Hard assignment - each point belongs to exactly one cluster (contrast with soft assignment in EM). M-STEP (Update): Recalculate centroids as means. CONVERGENCE: Guaranteed to converge to local optimum, but depends on initialization. CONNECTIONS: Similar to EM algorithm structure. Coordinate descent optimization. PRACTICAL: Usually converges in few iterations, but can get stuck in poor local optima.'
+                'extra': '''ANALOGY: Like a dance where partners (points) choose their favorite dancer (centroid), then dancers move to the center of their group, repeat until everyone is happy.
+
+ALGORITHM STEPS:
+• E-STEP (Assignment): Hard assignment - each point belongs to exactly one cluster (contrast with soft assignment in EM)
+• M-STEP (Update): Recalculate centroids as means
+
+CONVERGENCE:
+• Guaranteed to converge to local optimum, but depends on initialization
+• Usually converges in few iterations, but can get stuck in poor local optima
+
+CONNECTIONS:
+• Similar to EM algorithm structure
+• Coordinate descent optimization'''
             },
             
             # EM Algorithm (High Priority - New Topic)
@@ -127,7 +233,21 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'EM algorithm latent-variables',
-                'extra': 'CHICKEN-AND-EGG ANALOGY: Like trying to learn two things at once - "If I knew which cluster each point belonged to, I could estimate cluster parameters. If I knew cluster parameters, I could assign points to clusters." EM solves this circular dependency. LATENT VARIABLES: Hidden/unobserved variables (like cluster membership). APPLICATIONS: Gaussian Mixture Models, Hidden Markov Models, factor analysis, missing data imputation. GUARANTEE: Always increases likelihood (or stays same), guaranteed to converge to local maximum. CONNECTIONS: Generalizes K-means (soft assignment vs hard), related to variational inference.'
+                'extra': '''ANALOGY: Like trying to learn two things at once - "If I knew which cluster each point belonged to, I could estimate cluster parameters. If I knew cluster parameters, I could assign points to clusters." EM solves this circular dependency.
+
+KEY CONCEPT: Latent variables - hidden/unobserved variables (like cluster membership)
+
+GUARANTEE: Always increases likelihood (or stays same), guaranteed to converge to local maximum
+
+APPLICATIONS:
+• Gaussian Mixture Models
+• Hidden Markov Models
+• Factor analysis
+• Missing data imputation
+
+CONNECTIONS:
+• Generalizes K-means (soft assignment vs hard)
+• Related to variational inference'''
             },
             {
                 'front': 'What is the E-step in EM algorithm?',
@@ -135,7 +255,17 @@ class MLFlashcardGenerator:
                 'formula': '\\[Q(θ|θ^{(t)}) = E[\\log L(θ|X,Z)|X,θ^{(t)}]\\]',
                 'source': 'TOPICS.md',
                 'tags': 'EM e-step expectation',
-                'extra': 'INTUITIVE MEANING: "Given my current model, how likely is each data point to belong to each cluster?" Computes soft assignments (probabilities) rather than hard assignments. GAUSSIAN MIXTURE EXAMPLE: For each point, calculate probability it came from each Gaussian component using current means/covariances. MATHEMATICAL: Takes expectation over latent variables Z given observed data X and current parameters. CONNECTIONS: Similar to K-means assignment step but with probabilities. Creates "responsibility" matrix showing how responsible each cluster is for each point.'
+                'extra': '''INTUITIVE MEANING: "Given my current model, how likely is each data point to belong to each cluster?"
+
+KEY CONCEPT: Computes soft assignments (probabilities) rather than hard assignments
+
+GAUSSIAN MIXTURE EXAMPLE: For each point, calculate probability it came from each Gaussian component using current means/covariances
+
+MATHEMATICAL: Takes expectation over latent variables Z given observed data X and current parameters
+
+CONNECTIONS:
+• Similar to K-means assignment step but with probabilities
+• Creates "responsibility" matrix showing how responsible each cluster is for each point'''
             },
             {
                 'front': 'What is the M-step in EM algorithm?',
@@ -143,7 +273,19 @@ class MLFlashcardGenerator:
                 'formula': '\\[θ^{(t+1)} = \\arg\\max Q(θ|θ^{(t)})\\]',
                 'source': 'TOPICS.md',
                 'tags': 'EM m-step maximization',
-                'extra': 'INTUITIVE MEANING: "Given these soft assignments, what are the best parameters for my model?" Uses weighted versions of standard estimators. GAUSSIAN MIXTURE EXAMPLE: Update means using weighted averages (weights = responsibilities from E-step), update covariances using weighted sample covariances. WEIGHTED UPDATES: Each data point contributes to parameter estimates proportional to its assignment probability. CONNECTIONS: Generalizes K-means centroid update (hard weights vs soft weights). Maximum likelihood estimation with weighted data.'
+                'extra': '''INTUITIVE MEANING: "Given these soft assignments, what are the best parameters for my model?"
+
+KEY CONCEPT: Uses weighted versions of standard estimators
+
+GAUSSIAN MIXTURE EXAMPLE:
+• Update means using weighted averages (weights = responsibilities from E-step)
+• Update covariances using weighted sample covariances
+
+WEIGHTED UPDATES: Each data point contributes to parameter estimates proportional to its assignment probability
+
+CONNECTIONS:
+• Generalizes K-means centroid update (hard weights vs soft weights)
+• Maximum likelihood estimation with weighted data'''
             },
             
             # Neural Networks (Highest Priority - 36 points)
@@ -153,7 +295,25 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'neural-networks definition',
-                'extra': 'BIOLOGICAL ANALOGY: Like a simplified brain where artificial neurons receive signals, process them, and pass signals forward. Each connection has a "strength" (weight). UNIVERSAL APPROXIMATION: With enough hidden units, can approximate any continuous function (theoretically). LAYERS: Input layer (data), hidden layers (feature extraction/transformation), output layer (predictions). POWER: Can learn non-linear relationships, feature interactions, and hierarchical representations. CONNECTIONS: Generalize linear regression (single layer = linear regression), logistic regression (single layer + sigmoid). APPLICATIONS: Image recognition, NLP, game playing, drug discovery.'
+                'extra': '''ANALOGY: Like a simplified brain where artificial neurons receive signals, process them, and pass signals forward. Each connection has a "strength" (weight).
+
+LAYERS:
+• Input layer (data)
+• Hidden layers (feature extraction/transformation)
+• Output layer (predictions)
+
+UNIVERSAL APPROXIMATION: With enough hidden units, can approximate any continuous function (theoretically)
+
+POWER:
+• Learn non-linear relationships
+• Feature interactions
+• Hierarchical representations
+
+CONNECTIONS:
+• Generalize linear regression (single layer = linear regression)
+• Logistic regression (single layer + sigmoid)
+
+APPLICATIONS: Image recognition, NLP, game playing, drug discovery'''
             },
             {
                 'front': 'What is the forward pass in neural networks?',
@@ -161,7 +321,17 @@ class MLFlashcardGenerator:
                 'formula': '\\[h = \\sigma(Wx + b)\\]',
                 'source': 'TOPICS.md',
                 'tags': 'neural-networks forward-pass',
-                'extra': 'ASSEMBLY LINE ANALOGY: Like a factory assembly line where each layer transforms the input, passing it to the next station. Raw materials (input) → processed goods (hidden layers) → final product (output). COMPUTATION: Linear transformation (Wx + b) followed by non-linear activation (σ). WITHOUT ACTIVATION: Network would just be linear regression! LAYER-BY-LAYER: Output of layer i becomes input to layer i+1. MATRIX OPERATIONS: Highly parallelizable, efficient on GPUs. INFORMATION FLOW: Only forward direction during inference, no feedback loops (unlike RNNs).'
+                'extra': '''ANALOGY: Like a factory assembly line where each layer transforms the input, passing it to the next station. Raw materials (input) → processed goods (hidden layers) → final product (output).
+
+COMPUTATION: Linear transformation (Wx + b) followed by non-linear activation (σ)
+
+CRITICAL: Without activation, network would just be linear regression!
+
+PROCESS:
+• Layer-by-layer: Output of layer i becomes input to layer i+1
+• Information flow: Only forward direction during inference (no feedback loops like RNNs)
+
+TECHNICAL: Matrix operations are highly parallelizable, efficient on GPUs'''
             },
             {
                 'front': 'What is backpropagation?',
@@ -169,7 +339,22 @@ class MLFlashcardGenerator:
                 'formula': '\\[\\frac{\\partial L}{\\partial W} = \\frac{\\partial L}{\\partial h} \\cdot \\frac{\\partial h}{\\partial W}\\]',
                 'source': 'TOPICS.md',
                 'tags': 'neural-networks backpropagation',
-                'extra': 'BLAME ASSIGNMENT ANALOGY: Like tracing responsibility for a mistake backwards through a company hierarchy - "How much did each department contribute to the final error?" CHAIN RULE: Mathematical technique for computing derivatives of composite functions. EFFICIENT: Computes all gradients in one backward pass, reusing computations. PROCESS: 1) Forward pass computes predictions 2) Compute loss 3) Backward pass computes gradients 4) Update weights. VANISHING GRADIENTS: Problem in deep networks where gradients become very small in early layers. COMPUTATIONAL GRAPH: Network as graph of operations, backprop traverses graph backwards.'
+                'extra': '''ANALOGY: Like tracing responsibility for a mistake backwards through a company hierarchy - "How much did each department contribute to the final error?"
+
+MATHEMATICAL BASIS: Chain rule - technique for computing derivatives of composite functions
+
+EFFICIENCY: Computes all gradients in one backward pass, reusing computations
+
+PROCESS:
+1. Forward pass computes predictions
+2. Compute loss
+3. Backward pass computes gradients
+4. Update weights
+
+CHALLENGES:
+• Vanishing gradients: Problem in deep networks where gradients become very small in early layers
+
+CONCEPT: Network as computational graph - backprop traverses graph backwards'''
             },
             {
                 'front': 'What is the ReLU activation function?',
@@ -177,7 +362,23 @@ class MLFlashcardGenerator:
                 'formula': '\\[ReLU(x) = \\max(0, x)\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'neural-networks activation-function relu',
-                'extra': 'SWITCH ANALOGY: Like an electrical switch - if signal is positive, let it through; if negative, block it completely. ADVANTAGES: Simple computation, gradient is 1 for positive inputs (no vanishing gradient), sparsity (many neurons output 0). BIOLOGICAL: Somewhat resembles neuron firing patterns. PROBLEMS: "Dying ReLU" - neurons can get stuck outputting 0 and never recover. VARIANTS: Leaky ReLU (small slope for negative), ELU, Swish. GRADIENT: ∂ReLU/∂x = 1 if x>0, else 0 (undefined at 0, usually set to 0). DEEP NETWORKS: Enables training of very deep networks without vanishing gradients.'
+                'extra': '''ANALOGY: Like an electrical switch - if signal is positive, let it through; if negative, block it completely.
+
+ADVANTAGES:
+• Simple computation
+• Gradient is 1 for positive inputs (no vanishing gradient)
+• Sparsity (many neurons output 0)
+• Enables training of very deep networks
+
+PROBLEMS: "Dying ReLU" - neurons can get stuck outputting 0 and never recover
+
+VARIANTS:
+• Leaky ReLU (small slope for negative)
+• ELU, Swish
+
+TECHNICAL:
+• Gradient: ∂ReLU/∂x = 1 if x>0, else 0 (undefined at 0, usually set to 0)
+• Somewhat resembles biological neuron firing patterns'''
             },
             {
                 'front': 'What is gradient descent?',
@@ -185,7 +386,21 @@ class MLFlashcardGenerator:
                 'formula': '\\[θ = θ - α∇J(θ)\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'optimization gradient-descent',
-                'extra': 'MOUNTAIN CLIMBING ANALOGY: Like hiking down a mountain in fog - you can only see your immediate surroundings, so you always step in the steepest downward direction. LEARNING RATE (α): Step size - too large and you overshoot the valley, too small and training is slow. GRADIENT: Points in direction of steepest increase, so we go opposite direction (negative gradient). VARIANTS: SGD (stochastic - use mini-batches), Adam (adaptive learning rates), momentum (remembers previous directions). LOCAL MINIMA: Can get stuck in local valleys instead of finding global minimum. CONVEX FUNCTIONS: Guaranteed to find global minimum, neural networks are non-convex.'
+                'extra': '''ANALOGY: Like hiking down a mountain in fog - you can only see your immediate surroundings, so you always step in the steepest downward direction.
+
+LEARNING RATE (α): Step size - too large and you overshoot the valley, too small and training is slow
+
+GRADIENT: Points in direction of steepest increase, so we go opposite direction (negative gradient)
+
+VARIANTS:
+• SGD (stochastic - use mini-batches)
+• Adam (adaptive learning rates)
+• Momentum (remembers previous directions)
+
+CHALLENGES:
+• Local minima: Can get stuck in local valleys instead of finding global minimum
+• Convex functions: Guaranteed to find global minimum
+• Neural networks are non-convex'''
             },
             
             # Linear Regression (High Priority - 27 points)
@@ -195,7 +410,22 @@ class MLFlashcardGenerator:
                 'formula': '\\[y = β_0 + β_1x_1 + β_2x_2 + ... + ε\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'linear-regression supervised-learning',
-                'extra': 'INTUITION: Finding the "best-fit line" through data points - like drawing a straight line through a scatter plot that minimizes distances to points. ASSUMPTIONS: Linear relationship, independence of errors, homoscedasticity (constant error variance), normality of residuals. COEFFICIENTS: β_0 = intercept (value when all x=0), β_i = slope (change in y per unit change in x_i). ERROR TERM (ε): Captures unmeasured factors, noise, model limitations. GEOMETRICALLY: In p-dimensional space, fits hyperplane to data. CONNECTIONS: Foundation for logistic regression, neural networks (single layer), polynomial regression.'
+                'extra': '''INTUITION: Finding the "best-fit line" through data points - like drawing a straight line through a scatter plot that minimizes distances to points.
+
+ASSUMPTIONS:
+• Linear relationship
+• Independence of errors
+• Homoscedasticity (constant error variance)
+• Normality of residuals
+
+COEFFICIENTS:
+• β_0 = intercept (value when all x=0)
+• β_i = slope (change in y per unit change in x_i)
+• Error term (ε): Captures unmeasured factors, noise, model limitations
+
+GEOMETRY: In p-dimensional space, fits hyperplane to data
+
+CONNECTIONS: Foundation for logistic regression, neural networks (single layer), polynomial regression'''
             },
             {
                 'front': 'What is the normal equation for linear regression?',
@@ -203,7 +433,24 @@ class MLFlashcardGenerator:
                 'formula': '\\[β = (X^TX)^{-1}X^Ty\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'linear-regression normal-equation',
-                'extra': 'MAGIC FORMULA: Directly computes optimal weights without iteration! DERIVATION: Set gradient of least squares loss to zero, solve for β. COMPUTATIONAL: X^TX is Gram matrix (p×p), computationally expensive for large p. REQUIREMENTS: X^TX must be invertible (full rank) - problems with multicollinearity. WHEN TO USE: Small datasets, few features (<10k), want exact solution. ALTERNATIVES: Gradient descent for large datasets, Ridge regression when X^TX is singular. GEOMETRIC: Projects y onto column space of X, finds closest point.'
+                'extra': '''MAGIC FORMULA: Directly computes optimal weights without iteration!
+
+DERIVATION: Set gradient of least squares loss to zero, solve for β
+
+COMPUTATIONAL NOTES:
+• X^TX is Gram matrix (p×p), computationally expensive for large p
+• X^TX must be invertible (full rank) - problems with multicollinearity
+
+WHEN TO USE:
+• Small datasets
+• Few features (<10k)
+• Want exact solution
+
+ALTERNATIVES:
+• Gradient descent for large datasets
+• Ridge regression when X^TX is singular
+
+GEOMETRIC: Projects y onto column space of X, finds closest point'''
             },
             {
                 'front': 'What is Ridge regression?',
@@ -211,7 +458,19 @@ class MLFlashcardGenerator:
                 'formula': '\\[\\hat{β} = (X^TX + λI)^{-1}X^Ty\\]',
                 'source': 'TOPICS.md',
                 'tags': 'ridge-regression regularization',
-                'extra': 'PENALTY ANALOGY: Like speed limits for coefficients - prevents any single coefficient from becoming too large and dominating the model. SHRINKAGE: Pulls coefficients toward zero but never exactly zero (contrast with Lasso). BIAS-VARIANCE: Adds bias but reduces variance, often improving generalization. MULTICOLLINEARITY: Handles correlated features well by distributing weight among them. REGULARIZATION PARAMETER (λ): Cross-validation to choose optimal value. GEOMETRIC: Constrains coefficients to lie within L2 ball (sphere). MATRIX INSIGHT: λI makes X^TX + λI always invertible, fixes singularity issues.'
+                'extra': '''ANALOGY: Like speed limits for coefficients - prevents any single coefficient from becoming too large and dominating the model.
+
+SHRINKAGE: Pulls coefficients toward zero but never exactly zero (contrast with Lasso)
+
+BIAS-VARIANCE: Adds bias but reduces variance, often improving generalization
+
+MULTICOLLINEARITY: Handles correlated features well by distributing weight among them
+
+REGULARIZATION PARAMETER (λ): Use cross-validation to choose optimal value
+
+GEOMETRIC: Constrains coefficients to lie within L2 ball (sphere)
+
+MATRIX INSIGHT: λI makes X^TX + λI always invertible, fixes singularity issues'''
             },
             {
                 'front': 'What is the difference between Ridge and Lasso regression?',
@@ -219,7 +478,25 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'regularization ridge lasso',
-                'extra': 'GEOMETRIC INTUITION: Ridge constraint is a circle (smooth), Lasso is a diamond (corners). Corners of diamond cause coefficients to hit exactly zero. FEATURE SELECTION: Lasso automatically selects features (sparse solutions), Ridge keeps all features but shrinks them. CORRELATED FEATURES: Ridge spreads weights evenly among correlated features, Lasso arbitrarily picks one. COMPUTATIONAL: Ridge has closed-form solution, Lasso requires iterative algorithms. ELASTIC NET: Combines both penalties - L1 for sparsity, L2 for groupings. WHEN TO USE: Lasso when you believe few features matter, Ridge when many features contribute.'
+                'extra': '''GEOMETRIC INTUITION: Ridge constraint is a circle (smooth), Lasso is a diamond (corners). Corners of diamond cause coefficients to hit exactly zero.
+
+FEATURE SELECTION:
+• Lasso: Automatically selects features (sparse solutions)
+• Ridge: Keeps all features but shrinks them
+
+CORRELATED FEATURES:
+• Ridge: Spreads weights evenly among correlated features
+• Lasso: Arbitrarily picks one
+
+COMPUTATIONAL:
+• Ridge: Has closed-form solution
+• Lasso: Requires iterative algorithms
+
+ELASTIC NET: Combines both penalties - L1 for sparsity, L2 for groupings
+
+WHEN TO USE:
+• Lasso: When you believe few features matter
+• Ridge: When many features contribute'''
             },
             
             # Logistic Regression (High Priority)
@@ -229,7 +506,19 @@ class MLFlashcardGenerator:
                 'formula': '\\[p = \\frac{1}{1 + e^{-z}}\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'logistic-regression classification',
-                'extra': 'S-CURVE ANALOGY: Like a smooth switch that gradually transitions from 0 to 1, instead of linear regression\'s unlimited range. LINEAR PREDICTOR: z = β₀ + β₁x₁ + β₂x₂ + ... (same as linear regression). SIGMOID FUNCTION: Maps any real number to (0,1) interval - perfect for probabilities! DECISION BOUNDARY: When p = 0.5, z = 0, so β₀ + β₁x₁ + ... = 0 defines boundary. ODDS INTERPRETATION: log(p/(1-p)) = z, so coefficients represent log-odds ratios. CONNECTIONS: Generalized Linear Model (GLM), neural network with single layer + sigmoid activation.'
+                'extra': '''ANALOGY: Like a smooth switch that gradually transitions from 0 to 1, instead of linear regression\'s unlimited range.
+
+LINEAR PREDICTOR: z = β₀ + β₁x₁ + β₂x₂ + ... (same as linear regression)
+
+SIGMOID FUNCTION: Maps any real number to (0,1) interval - perfect for probabilities!
+
+DECISION BOUNDARY: When p = 0.5, z = 0, so β₀ + β₁x₁ + ... = 0 defines boundary
+
+ODDS INTERPRETATION: log(p/(1-p)) = z, so coefficients represent log-odds ratios
+
+CONNECTIONS:
+• Generalized Linear Model (GLM)
+• Neural network with single layer + sigmoid activation'''
             },
             {
                 'front': 'What is the softmax function?',
@@ -237,7 +526,19 @@ class MLFlashcardGenerator:
                 'formula': '\\[p_i = \\frac{\\exp(w_i^T x)}{\\sum_j \\exp(w_j^T x)}\\]',
                 'source': 'TOPICS.md',
                 'tags': 'logistic-regression softmax multi-class',
-                'extra': 'COMPETITION ANALOGY: Like a talent competition where each class "competes" with a score (w_i^T x), and probabilities are determined by relative performance. NORMALIZATION: Probabilities sum to 1 across all classes. EXPONENTIAL: Amplifies differences between scores - small differences in scores become large differences in probabilities. TEMPERATURE: Can add temperature parameter to control sharpness of distribution. ONE-HOT: Often used with cross-entropy loss and one-hot encoded targets. CONNECTIONS: Reduces to sigmoid for binary case, used as final layer in neural networks for classification.'
+                'extra': '''ANALOGY: Like a talent competition where each class "competes" with a score (w_i^T x), and probabilities are determined by relative performance.
+
+NORMALIZATION: Probabilities sum to 1 across all classes
+
+EXPONENTIAL: Amplifies differences between scores - small differences in scores become large differences in probabilities
+
+TEMPERATURE: Can add temperature parameter to control sharpness of distribution
+
+USAGE: Often used with cross-entropy loss and one-hot encoded targets
+
+CONNECTIONS:
+• Reduces to sigmoid for binary case
+• Used as final layer in neural networks for classification'''
             },
             
             # Decision Trees (19 points)
@@ -247,7 +548,19 @@ class MLFlashcardGenerator:
                 'formula': '\\[H(S) = -\\sum p_i \\log_2(p_i)\\]',
                 'source': 'TOPICS.md',
                 'tags': 'decision-trees entropy',
-                'extra': 'INFORMATION THEORY ANALOGY: Like measuring "surprise" in a message - if all examples are same class (pure), entropy = 0 (no surprise). If equal mix of classes, entropy is maximum (most surprise). DECISION MAKING: Entropy guides tree splits - we want to ask questions that reduce uncertainty the most. BINARY EXAMPLE: 50-50 split has entropy = 1 bit, 90-10 split has entropy ≈ 0.47 bits. CONNECTIONS: Related to information gain, Gini impurity (similar concept), Shannon information theory. PRACTICAL: Lower entropy after split means better question/split.'
+                'extra': '''ANALOGY: Like measuring "surprise" in a message - if all examples are same class (pure), entropy = 0 (no surprise). If equal mix of classes, entropy is maximum (most surprise).
+
+DECISION MAKING: Entropy guides tree splits - we want to ask questions that reduce uncertainty the most
+
+BINARY EXAMPLE:
+• 50-50 split has entropy = 1 bit
+• 90-10 split has entropy ≈ 0.47 bits
+
+CONNECTIONS:
+• Related to information gain, Gini impurity (similar concept)
+• Shannon information theory
+
+PRACTICAL: Lower entropy after split means better question/split'''
             },
             {
                 'front': 'What is information gain?',
@@ -281,7 +594,17 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'SVM classification margin',
-                'extra': 'SAFETY BUFFER ANALOGY: Like drawing the widest possible "no man\'s land" between two armies - points closest to border (support vectors) determine the boundary. GEOMETRIC INTUITION: In 2D, finds line with maximum distance to nearest points from each class. In higher dimensions, finds hyperplane. SPARSE SOLUTION: Only support vectors matter for decision boundary - can ignore all other training points! ROBUSTNESS: Maximum margin principle provides better generalization than simply finding any separating boundary. SUPPORT VECTORS: Critical points that define the solution - removing them changes the decision boundary.'
+                'extra': '''ANALOGY: Like drawing the widest possible "no man\'s land" between two armies - points closest to border (support vectors) determine the boundary.
+
+GEOMETRIC INTUITION:
+• In 2D: Finds line with maximum distance to nearest points from each class
+• In higher dimensions: Finds hyperplane
+
+SPARSE SOLUTION: Only support vectors matter for decision boundary - can ignore all other training points!
+
+ROBUSTNESS: Maximum margin principle provides better generalization than simply finding any separating boundary
+
+SUPPORT VECTORS: Critical points that define the solution - removing them changes the decision boundary'''
             },
             {
                 'front': 'What is the SVM primal objective function?',
@@ -341,7 +664,23 @@ class MLFlashcardGenerator:
                 'formula': '\\[Error = Bias^2 + Variance + Noise\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'bias-variance tradeoff',
-                'extra': 'ARCHERY ANALOGY: Bias = systematic error (consistently missing the target in same direction), Variance = inconsistency (shots scattered around). IDEAL: Low bias AND low variance (tight cluster at bullseye). REAL TRADEOFF: Usually can\'t have both - complex models fit training data well (low bias) but predictions vary with different training sets (high variance). IRREDUCIBLE ERROR: Noise component can\'t be reduced regardless of model. PRACTICAL: Simple models (linear) = high bias/low variance, Complex models (deep neural nets) = low bias/high variance. SWEET SPOT: Find model complexity that minimizes total error.'
+                'extra': '''ANALOGY: Archery target
+• Bias = systematic error (consistently missing target in same direction)
+• Variance = inconsistency (shots scattered around)
+
+IDEAL: Low bias AND low variance (tight cluster at bullseye)
+
+REAL TRADEOFF: Usually can\'t have both:
+• Complex models: Fit training data well (low bias) but predictions vary with different training sets (high variance)
+• Simple models: High bias/low variance
+
+IRREDUCIBLE ERROR: Noise component can\'t be reduced regardless of model
+
+PRACTICAL EXAMPLES:
+• Simple models (linear): High bias/low variance
+• Complex models (deep neural nets): Low bias/high variance
+
+GOAL: Find model complexity that minimizes total error'''
             },
             {
                 'front': 'What is bias in machine learning?',
@@ -375,7 +714,17 @@ class MLFlashcardGenerator:
                 'formula': '\\[Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}\\]',
                 'source': 'ML Fundamentals',
                 'tags': 'evaluation accuracy',
-                'extra': 'SIMPLE INTUITION: "How often is the model right?" IMBALANCED DATA TRAP: 99% accuracy sounds great, but if 99% of data is negative class, a "always predict negative" model achieves this! MEDICAL EXAMPLE: Cancer screening with 1% cancer rate - 99% accuracy might mean missing all cancer cases. BASELINE: Always compare to simple baselines (majority class, random guessing). ALTERNATIVES: Use precision, recall, F1-score, or balanced accuracy for imbalanced datasets. WHEN USEFUL: Balanced datasets where all classes matter equally.'
+                'extra': '''SIMPLE INTUITION: "How often is the model right?"
+
+IMBALANCED DATA TRAP: 99% accuracy sounds great, but if 99% of data is negative class, a "always predict negative" model achieves this!
+
+MEDICAL EXAMPLE: Cancer screening with 1% cancer rate - 99% accuracy might mean missing all cancer cases
+
+BASELINE: Always compare to simple baselines (majority class, random guessing)
+
+ALTERNATIVES: Use precision, recall, F1-score, or balanced accuracy for imbalanced datasets
+
+WHEN USEFUL: Balanced datasets where all classes matter equally'''
             },
             {
                 'front': 'What is precision?',
@@ -383,7 +732,17 @@ class MLFlashcardGenerator:
                 'formula': '\\[Precision = \\frac{TP}{TP + FP}\\]',
                 'source': 'TOPICS.md',
                 'tags': 'evaluation precision',
-                'extra': 'QUALITY CONTROL ANALOGY: Like quality control in manufacturing - "Of all products we labeled as \'good\', what fraction actually are good?" FALSE POSITIVE COST: Emphasizes minimizing false alarms. EMAIL SPAM: High precision means few legitimate emails marked as spam. MEDICAL: High precision means few healthy patients diagnosed with disease. TRADE-OFF: Increasing precision often decreases recall (fewer positive predictions overall). EXTREME CASE: Predict positive only when 100% certain → perfect precision but terrible recall.'
+                'extra': '''ANALOGY: Like quality control in manufacturing - "Of all products we labeled as \'good\', what fraction actually are good?"
+
+FOCUS: Emphasizes minimizing false alarms (false positive cost)
+
+REAL-WORLD EXAMPLES:
+• Email spam: High precision means few legitimate emails marked as spam
+• Medical: High precision means few healthy patients diagnosed with disease
+
+TRADE-OFF: Increasing precision often decreases recall (fewer positive predictions overall)
+
+EXTREME CASE: Predict positive only when 100% certain → perfect precision but terrible recall'''
             },
             {
                 'front': 'What is recall (sensitivity)?',
@@ -391,7 +750,17 @@ class MLFlashcardGenerator:
                 'formula': '\\[Recall = \\frac{TP}{TP + FN}\\]',
                 'source': 'TOPICS.md',
                 'tags': 'evaluation recall sensitivity',
-                'extra': 'SEARCH AND RESCUE ANALOGY: "Of all people who are actually lost, how many did we find?" Missing people (false negatives) is catastrophic. FALSE NEGATIVE COST: Emphasizes not missing positive cases. MEDICAL SCREENING: High recall means catching most disease cases, even if some false alarms. SECURITY: Airport screening prioritizes recall - better to flag innocent travelers than miss threats. SYNONYMS: Sensitivity, True Positive Rate. EXTREME CASE: Predict everyone as positive → perfect recall but terrible precision.'
+                'extra': '''ANALOGY: "Of all people who are actually lost, how many did we find?" Missing people (false negatives) is catastrophic.
+
+FOCUS: Emphasizes not missing positive cases (false negative cost)
+
+REAL-WORLD EXAMPLES:
+• Medical screening: High recall means catching most disease cases, even if some false alarms
+• Security: Airport screening prioritizes recall - better to flag innocent travelers than miss threats
+
+SYNONYMS: Sensitivity, True Positive Rate
+
+EXTREME CASE: Predict everyone as positive → perfect recall but terrible precision'''
             },
             {
                 'front': 'What is F1-score?',
@@ -399,7 +768,19 @@ class MLFlashcardGenerator:
                 'formula': '\\[F1 = \\frac{2 \\times Precision \\times Recall}{Precision + Recall}\\]',
                 'source': 'TOPICS.md',
                 'tags': 'evaluation f1-score',
-                'extra': 'BALANCE ANALOGY: Like finding the sweet spot between two competing goals - quality (precision) vs completeness (recall). HARMONIC MEAN: Penalizes extreme values more than arithmetic mean - if either precision or recall is low, F1 is low. SINGLE METRIC: Convenient single number for model comparison, especially with imbalanced data. LIMITATIONS: Treats precision and recall equally - may not match business needs. VARIANTS: Fβ score weights recall β times as important as precision. INTERPRETATION: F1=1 is perfect, F1=0 is worst possible.'
+                'extra': '''ANALOGY: Like finding the sweet spot between two competing goals - quality (precision) vs completeness (recall).
+
+HARMONIC MEAN: Penalizes extreme values more than arithmetic mean - if either precision or recall is low, F1 is low
+
+ADVANTAGES:
+• Single metric: Convenient for model comparison, especially with imbalanced data
+• Balanced: Considers both precision and recall
+
+LIMITATIONS: Treats precision and recall equally - may not match business needs
+
+VARIANTS: Fβ score weights recall β times as important as precision
+
+INTERPRETATION: F1=1 is perfect, F1=0 is worst possible'''
             },
             {
                 'front': 'What is specificity?',
@@ -449,7 +830,24 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'overfitting generalization',
-                'extra': 'MEMORIZATION ANALOGY: Like a student who memorizes textbook problems perfectly but fails on new exam questions - learned specific examples, not general principles. SYMPTOMS: Large gap between training and validation performance, model performs worse as complexity increases beyond optimal point. CAUSES: Too many parameters relative to data, training too long, noise in training data. SOLUTIONS: Regularization (Ridge, Lasso, dropout), cross-validation, early stopping, more data, simpler model. DETECTION: Use validation set or cross-validation to monitor generalization performance during training.'
+                'extra': '''ANALOGY: Like a student who memorizes textbook problems perfectly but fails on new exam questions - learned specific examples, not general principles.
+
+SYMPTOMS:
+• Large gap between training and validation performance
+• Model performs worse as complexity increases beyond optimal point
+
+CAUSES:
+• Too many parameters relative to data
+• Training too long
+• Noise in training data
+
+SOLUTIONS:
+• Regularization (Ridge, Lasso, dropout)
+• Cross-validation
+• Early stopping
+• More data or simpler model
+
+DETECTION: Use validation set or cross-validation to monitor generalization performance during training'''
             },
             {
                 'front': 'What is underfitting?',
@@ -457,7 +855,20 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'ML Fundamentals',
                 'tags': 'underfitting bias',
-                'extra': 'OVERSIMPLIFICATION ANALOGY: Like trying to describe a symphony with only three notes - missing essential complexity. SYMPTOMS: Poor performance on both training AND test data, training error remains high. HIGH BIAS: Model makes strong assumptions that don\'t match reality (e.g., linear model for curved relationship). SOLUTIONS: Increase model complexity (more features, polynomial terms, deeper networks), reduce regularization, train longer. GOLDILOCKS PRINCIPLE: Need model that\'s "just right" - complex enough to capture patterns but simple enough to generalize.'
+                'extra': '''ANALOGY: Like trying to describe a symphony with only three notes - missing essential complexity.
+
+SYMPTOMS:
+• Poor performance on both training AND test data
+• Training error remains high
+
+HIGH BIAS: Model makes strong assumptions that don\'t match reality (e.g., linear model for curved relationship)
+
+SOLUTIONS:
+• Increase model complexity (more features, polynomial terms, deeper networks)
+• Reduce regularization
+• Train longer
+
+GOLDILOCKS PRINCIPLE: Need model that\'s "just right" - complex enough to capture patterns but simple enough to generalize'''
             },
             
             # CNN Concepts (CRITICAL - Agent 1 Priority)
@@ -623,7 +1034,20 @@ class MLFlashcardGenerator:
                 'formula': '',
                 'source': 'Evaluation',
                 'tags': 'evaluation AUC classification',
-                'extra': 'PROBABILITY INTERPRETATION: AUC = probability that model ranks a random positive example higher than a random negative example. SCALE: 0.5 = random guessing (coin flip), 1.0 = perfect separation, <0.5 = worse than random (flip predictions!). THRESHOLD-INDEPENDENT: Single number summarizing model performance across all possible thresholds. RANKING QUALITY: Measures how well model ranks examples, not just classification accuracy. IMBALANCED DATA: Can be misleading - high AUC even when precision/recall are poor. PRACTICAL: Good baseline metric, but supplement with precision-recall for imbalanced datasets.'
+                'extra': '''PROBABILITY INTERPRETATION: AUC = probability that model ranks a random positive example higher than a random negative example
+
+SCALE:
+• 0.5 = random guessing (coin flip)
+• 1.0 = perfect separation
+• <0.5 = worse than random (flip predictions!)
+
+THRESHOLD-INDEPENDENT: Single number summarizing model performance across all possible thresholds
+
+RANKING QUALITY: Measures how well model ranks examples, not just classification accuracy
+
+IMBALANCED DATA: Can be misleading - high AUC even when precision/recall are poor
+
+PRACTICAL: Good baseline metric, but supplement with precision-recall for imbalanced datasets'''
             },
             
             # Regression Evaluation (Agent 3 Priority)
@@ -745,6 +1169,44 @@ class MLFlashcardGenerator:
         
         return cards
     
+    def _load_assignment_cards(self):
+        """Load flashcards from assignment JSON files"""
+        assignment_cards = []
+        
+        # Find all assignment JSON files
+        json_files = list(Path('.').glob('assignment*_flashcards.json'))
+        
+        for json_file in sorted(json_files):
+            try:
+                print(f"Loading cards from {json_file}")
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Extract cards from the JSON structure
+                # Each file has structure: {"assignment{N}_flashcards": [cards...]}
+                for key, cards in data.items():
+                    if key.endswith('_flashcards') and isinstance(cards, list):
+                        for card in cards:
+                            # Ensure all required fields exist
+                            standardized_card = {
+                                'front': card.get('front', ''),
+                                'back': card.get('back', ''),
+                                'formula': card.get('formula', ''),
+                                'source': card.get('source', ''),
+                                'tags': card.get('tags', ''),
+                                'extra': card.get('extra', '')
+                            }
+                            assignment_cards.append(standardized_card)
+                        
+                        print(f"   -> Loaded {len(cards)} cards from {key}")
+                        
+            except Exception as e:
+                print(f"Warning: Could not load {json_file}: {e}")
+                continue
+        
+        print(f"Total assignment cards loaded: {len(assignment_cards)}")
+        return assignment_cards
+    
     def _convert_to_mathjax(self, latex_formula):
         """Convert LaTeX formula to MathJax format"""
         # Basic conversions for common patterns
@@ -771,23 +1233,92 @@ class MLFlashcardGenerator:
             
         return formula
     
+    def _parse_extra_content(self, extra_text):
+        """Parse structured extra content into separate fields"""
+        if not extra_text or not extra_text.strip():
+            return {}
+        
+        # Initialize fields
+        fields = {
+            'analogy': '',
+            'key_insight': '',
+            'technical': '',
+            'connections': '',
+            'practical': ''
+        }
+        
+        # Extract analogy
+        analogy_match = re.search(r'ANALOGY:([^\n]*(?:\n(?!\w+:)[^\n]*)*)', extra_text, re.IGNORECASE | re.MULTILINE)
+        if analogy_match:
+            fields['analogy'] = analogy_match.group(1).strip()
+        
+        # Extract key insight
+        insight_patterns = ['KEY INSIGHT:', 'INTUITION:', 'SIMPLE INTUITION:', 'INTUITIVE MEANING:', 'KEY CONCEPT:']
+        for pattern in insight_patterns:
+            insight_match = re.search(rf'{pattern}([^\n]*(?:\n(?!\w+:)[^\n]*)*)', extra_text, re.IGNORECASE | re.MULTILINE)
+            if insight_match:
+                fields['key_insight'] = insight_match.group(1).strip()
+                break
+        
+        # Extract technical details
+        tech_patterns = ['TECHNICAL:', 'TECHNICAL NOTES:', 'MATHEMATICAL:', 'COMPUTATIONAL:', 'ALGORITHM:', 'PROCESS:']
+        tech_parts = []
+        for pattern in tech_patterns:
+            tech_match = re.search(rf'{pattern}([^\n]*(?:\n(?!\w+:)[^\n]*)*)', extra_text, re.IGNORECASE | re.MULTILINE)
+            if tech_match:
+                tech_parts.append(tech_match.group(1).strip())
+        if tech_parts:
+            fields['technical'] = ' | '.join(tech_parts)
+        
+        # Extract connections
+        conn_match = re.search(r'CONNECTIONS?:([^\n]*(?:\n(?!\w+:)[^\n]*)*)', extra_text, re.IGNORECASE | re.MULTILINE)
+        if conn_match:
+            fields['connections'] = conn_match.group(1).strip()
+        
+        # Extract practical applications
+        practical_patterns = ['PRACTICAL:', 'APPLICATIONS?:', 'REAL-WORLD EXAMPLES?:', 'WHEN TO USE:', 'USAGE:']
+        practical_parts = []
+        for pattern in practical_patterns:
+            practical_match = re.search(rf'{pattern}([^\n]*(?:\n(?!\w+:)[^\n]*)*)', extra_text, re.IGNORECASE | re.MULTILINE)
+            if practical_match:
+                practical_parts.append(practical_match.group(1).strip())
+        if practical_parts:
+            fields['practical'] = ' | '.join(practical_parts)
+        
+        return fields
+    
     def _create_single_anki_deck(self, all_cards):
         """Create and save single Anki deck file"""
         if not all_cards:
-            print("❌ No cards to save")
+            print("No cards to save")
             return
             
         # Create single deck
         deck = genanki.Deck(self.deck_id, self.deck_name)
         
         for card_data in all_cards:
+            # Parse extra content into structured fields
+            parsed_fields = self._parse_extra_content(card_data.get('extra', ''))
+            
+            # Check if we have structured content
+            has_structured_content = any(parsed_fields.values())
+            
+            # If we have structured content, clear the extra field to prevent duplication
+            # Otherwise, keep the extra field as fallback
+            extra_content = '' if has_structured_content else card_data.get('extra', '')
+            
             note = create_ml_note(
                 front=card_data['front'],
                 back=card_data['back'],
                 formula=card_data['formula'],
                 source=card_data['source'],
                 tags=card_data['tags'],
-                extra=card_data['extra']
+                analogy=parsed_fields.get('analogy', ''),
+                key_insight=parsed_fields.get('key_insight', ''),
+                technical=parsed_fields.get('technical', ''),
+                connections=parsed_fields.get('connections', ''),
+                practical=parsed_fields.get('practical', ''),
+                extra=extra_content  # Only show if no structured content
             )
             deck.add_note(note)
         
@@ -796,18 +1327,44 @@ class MLFlashcardGenerator:
         package = genanki.Package(deck)
         package.write_to_file(str(output_file))
         
-        print(f"💾 Saved {len(all_cards)} cards to {output_file}")
+        print(f"Saved {len(all_cards)} cards to {output_file}")
     
     def _save_csv_files(self, all_cards):
         """Save intermediate CSV files for review and editing"""
         csv_file = self.temp_dir / "all_cards.csv"
         
-        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=['front', 'back', 'formula', 'source', 'tags', 'extra'])
-            writer.writeheader()
-            writer.writerows(all_cards)
+        # Enhanced CSV with structured fields
+        enhanced_cards = []
+        for card in all_cards:
+            parsed_fields = self._parse_extra_content(card.get('extra', ''))
             
-        print(f"📄 Saved CSV review file: {csv_file}")
+            # Check if we have structured content
+            has_structured_content = any(parsed_fields.values())
+            
+            # If we have structured content, clear extra to prevent duplication
+            extra_content = '' if has_structured_content else card.get('extra', '')
+            
+            enhanced_card = {
+                'front': card['front'],
+                'back': card['back'],
+                'formula': card['formula'],
+                'source': card['source'],
+                'tags': card['tags'],
+                'analogy': parsed_fields.get('analogy', ''),
+                'key_insight': parsed_fields.get('key_insight', ''),
+                'technical': parsed_fields.get('technical', ''),
+                'connections': parsed_fields.get('connections', ''),
+                'practical': parsed_fields.get('practical', ''),
+                'extra': extra_content  # Only populate if no structured content
+            }
+            enhanced_cards.append(enhanced_card)
+        
+        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=['front', 'back', 'formula', 'source', 'tags', 'analogy', 'key_insight', 'technical', 'connections', 'practical', 'extra'])
+            writer.writeheader()
+            writer.writerows(enhanced_cards)
+            
+        print(f"Saved enhanced CSV review file: {csv_file}")
 
 if __name__ == "__main__":
     generator = MLFlashcardGenerator()

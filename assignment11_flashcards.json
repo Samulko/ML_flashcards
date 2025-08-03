@@ -1,0 +1,68 @@
+{
+  "assignment11_flashcards": [
+    {
+      "front": "What is the mathematical formula for 2D convolution output size with padding and stride?",
+      "back": "Output size = (Input size + 2×Padding - Filter size) / Stride + 1",
+      "formula": "\\[O = \\frac{I + 2P - F}{S} + 1\\]",
+      "source": "Assignment 11 - Convolutional Operations",
+      "tags": "convolution cnn padding stride",
+      "extra": "Critical for designing CNN architectures. For example, with input 32×32, filter 3×3, padding 1, stride 1: output = (32+2-3)/1+1 = 32×32 (preserves size). Without padding: (32-3)/1+1 = 30×30 (shrinks). This formula determines spatial dimensions throughout your network - essential for connecting layers properly."
+    },
+    {
+      "front": "What are the key components needed to train a CNN in PyTorch?",
+      "back": "Model (nn.Module), Loss function (criterion), Optimizer, Data loaders, Training loop with forward/backward passes",
+      "formula": "",
+      "source": "Assignment 11 - PyTorch Training",
+      "tags": "pytorch training cnn workflow",
+      "extra": "Essential PyTorch workflow: 1) Define model inheriting nn.Module with __init__ and forward() 2) Create criterion (e.g., CrossEntropyLoss) 3) Set optimizer (e.g., Adam) 4) Loop: optimizer.zero_grad() → forward pass → loss.backward() → optimizer.step(). Like cooking: recipe (model), ingredients (data), technique (optimizer), process (training loop)."
+    },
+    {
+      "front": "What effects do different convolutional filters have on images?",
+      "back": "Edge detection (gradients), blurring (smoothing), sharpening (high-pass), and directional features depending on filter weights",
+      "formula": "",
+      "source": "Assignment 11 - Filter Effects",
+      "tags": "convolution filters edge-detection image-processing",
+      "extra": "Filters extract features: Vertical edge detector [-1,0,1; -1,0,1; -1,0,1] finds vertical edges. Horizontal [−1,−1,−1; 0,0,0; 1,1,1] finds horizontal edges. Gaussian blur smooths images. Sharpening enhances edges. Think of filters as specialized 'lenses' - each sees different aspects of the image, like how different camera filters emphasize colors or textures."
+    },
+    {
+      "front": "How do you improve CNN performance beyond the baseline architecture?",
+      "back": "Data augmentation, deeper networks, dropout regularization, better optimizers, learning rate scheduling, residual connections",
+      "formula": "",
+      "source": "Assignment 11 - Model Improvement",
+      "tags": "cnn optimization performance data-augmentation",
+      "extra": "Multi-pronged approach: 1) Data augmentation (rotation, flipping, cropping) increases effective dataset size 2) Architectural improvements (more layers, dropout, residual connections) 3) Training improvements (Adam optimizer, learning rate scheduling, early stopping). Like improving athletic performance: better training data (augmentation), better technique (architecture), better coaching (optimization)."
+    },
+    {
+      "front": "What is the purpose of data normalization in CNN preprocessing?",
+      "back": "Standardizes input values to improve training stability and convergence speed",
+      "formula": "\\[x_{norm} = \\frac{x - \\mu}{\\sigma}\\]",
+      "source": "Assignment 11 - Data Preprocessing",
+      "tags": "normalization preprocessing cnn training",
+      "extra": "CIFAR-10 typically normalized to [-1,1] using mean=0.5, std=0.5 for each RGB channel. This prevents certain features from dominating due to scale differences and helps gradients flow better during backpropagation. Like standardizing test scores - puts all inputs on equal footing so the network can learn patterns rather than being distracted by scale differences."
+    },
+    {
+      "front": "What is the role of MaxPooling in CNN architectures?",
+      "back": "Reduces spatial dimensions, provides translation invariance, and reduces computational cost while retaining important features",
+      "formula": "",
+      "source": "Assignment 11 - CNN Architecture",
+      "tags": "maxpooling cnn dimensionality-reduction",
+      "extra": "MaxPooling takes maximum value in each region (typically 2×2), reducing 32×32 to 16×16. Benefits: 1) Reduces parameters and computation 2) Provides translation invariance (small shifts don't change output) 3) Focuses on strongest activations. Trade-off: loses spatial precision. Like summarizing a paragraph by keeping only the most important words - you lose detail but keep the essence."
+    },
+    {
+      "front": "How do you evaluate model performance during CNN training?",
+      "back": "Monitor training/validation loss and accuracy, use separate test set for final evaluation, watch for overfitting signs",
+      "formula": "\\[Accuracy = \\frac{Correct Predictions}{Total Predictions}\\]",
+      "source": "Assignment 11 - Model Evaluation",
+      "tags": "evaluation accuracy overfitting validation",
+      "extra": "Key metrics: Training loss should decrease steadily. Validation accuracy should improve initially. If training accuracy >> validation accuracy, you're overfitting. Test set gives final unbiased performance estimate. Use techniques like early stopping, dropout, or regularization if overfitting occurs. Like studying for exams: practice tests (validation) help adjust strategy, but final grade (test set) is what matters."
+    },
+    {
+      "front": "What is the relationship between stride, padding, and output spatial dimensions in CNNs?",
+      "back": "Stride controls downsampling rate, padding preserves spatial dimensions, together they determine output size according to the convolution formula",
+      "formula": "\\[Output = \\frac{Input + 2 \\times Padding - Kernel}{Stride} + 1\\]",
+      "source": "Assignment 11 - CNN Spatial Dimensions",
+      "tags": "stride padding convolution spatial-dimensions",
+      "extra": "Design trade-offs: Stride=1 preserves resolution but increases computation. Stride=2 halves dimensions, reducing computation but losing spatial detail. Padding='same' keeps dimensions constant, padding=0 shrinks output. Example: 64×128 input with 3×3 kernel, stride=1, padding=1 gives 64×128 output. Critical for designing networks where layer outputs must match expected input dimensions."
+    }
+  ]
+}

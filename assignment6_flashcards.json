@@ -1,0 +1,68 @@
+{
+  "assignment6_flashcards": [
+    {
+      "front": "What is the softmax function and why is it used in multiclass logistic regression?",
+      "back": "The softmax function converts raw logits into normalized class probabilities that sum to 1",
+      "formula": "\\[\\text{softmax}(z_i) = \\frac{e^{z_i}}{\\sum_{j=1}^{K} e^{z_j}}\\]",
+      "source": "Assignment 6 - Logistic Regression",
+      "tags": "logistic-regression softmax multiclass probability",
+      "extra": "Think of softmax as a 'soft' version of argmax - it assigns the highest probability to the largest logit but gives non-zero probabilities to all classes. Unlike sigmoid (binary), softmax handles multiple classes naturally. The exponential ensures positive values, and normalization ensures probabilities sum to 1. Essential for multiclass classification where you need interpretable probability distributions."
+    },
+    {
+      "front": "What is the Bayes decision rule for optimal classification?",
+      "back": "Assign observation x to class with highest posterior probability: argmax P(class|x)",
+      "formula": "\\[\\hat{y} = \\arg\\max_k P(C_k|\\mathbf{x}) = \\arg\\max_k P(\\mathbf{x}|C_k)P(C_k)\\]",
+      "source": "Assignment 6 - Bayes Error",
+      "tags": "bayes-rule optimal-classifier decision-theory",
+      "extra": "The Bayes classifier is theoretically optimal - no other classifier can achieve lower error rate. It's like having perfect knowledge of the true data distribution. In practice, we estimate these probabilities from data. The decision boundary occurs where P(C_1|x) = P(C_2|x). This connects to likelihood ratios and provides the gold standard for comparing other classifiers."
+    },
+    {
+      "front": "What is the Bayes error and what does it represent?",
+      "back": "The minimum possible classification error rate achieved by the optimal Bayes classifier",
+      "formula": "\\[\\epsilon_{Bayes} = \\int 1 - \\max_k P(C_k|\\mathbf{x}) \\, d\\mathbf{x}\\]",
+      "source": "Assignment 6 - Bayes Error",
+      "tags": "bayes-error optimal-performance theoretical-limit",
+      "extra": "Think of Bayes error as the 'speed of light' for classification - a fundamental limit you cannot exceed. It represents irreducible error due to overlapping class distributions. High Bayes error means classes are inherently hard to separate (like distinguishing identical twins), while low Bayes error means clear class separation exists. Any classifier with error significantly above Bayes error has room for improvement."
+    },
+    {
+      "front": "How does cross-entropy loss work in logistic regression and why is it preferred over MSE?",
+      "back": "Cross-entropy measures difference between predicted and true probability distributions, providing better gradients for classification",
+      "formula": "\\[L = -\\sum_{i=1}^{n} \\sum_{k=1}^{K} y_{ik} \\log(\\hat{p}_{ik})\\]",
+      "source": "Assignment 6 - Logistic Regression",
+      "tags": "cross-entropy loss-function classification optimization",
+      "extra": "Cross-entropy is like asking 'how surprised am I by the true answer given my predictions?' Perfect predictions give zero loss, while confident wrong predictions give huge penalties. Unlike MSE, cross-entropy provides strong gradients even when predictions are very wrong, leading to faster convergence. MSE can cause gradient saturation in classification, making training slow when the model needs to learn most."
+    },
+    {
+      "front": "Why is linear regression generally unsuitable for classification tasks?",
+      "back": "Linear regression outputs unbounded continuous values, lacks probabilistic interpretation, and uses inappropriate loss function (MSE) for discrete targets",
+      "formula": "\\[\\text{Linear: } \\hat{y} = \\mathbf{w}^T\\mathbf{x} + b \\text{ (unbounded)}\\]",
+      "source": "Assignment 6 - Linear vs Logistic",
+      "tags": "linear-regression classification limitations model-choice",
+      "extra": "Imagine using a thermometer to measure personality types - wrong tool for the job! Linear regression treats class labels as continuous numbers (0,1,2) implying Class 2 is 'twice' Class 1, which is meaningless. Outputs can be negative or >1, making probability interpretation impossible. MSE loss doesn't penalize confident wrong classifications appropriately. Decision boundaries become linear hyperplanes rather than probability-based regions."
+    },
+    {
+      "front": "How do class priors affect the Bayes decision boundary?",
+      "back": "Higher prior probability shifts decision boundary toward the less likely class, reducing its decision region",
+      "formula": "\\[P(C_k|\\mathbf{x}) \\propto P(\\mathbf{x}|C_k)P(C_k)\\]",
+      "source": "Assignment 6 - Bayes Error",
+      "tags": "class-priors decision-boundary bayes-rule",
+      "extra": "Think of priors as 'voting weights' - if one class is much more common, you need stronger evidence to predict the rare class. Like a medical test: if a disease is rare (low prior), you need very strong symptoms to diagnose it. Mathematically, increasing P(B) makes the decision boundary shift away from Class B's center, shrinking B's decision region. This reflects real-world asymmetric costs and frequencies."
+    },
+    {
+      "front": "What happens to decision boundaries when classes have different covariance matrices in Gaussian classification?",
+      "back": "Decision boundaries become non-linear (quadratic) curves instead of straight lines",
+      "formula": "\\[\\Sigma_A = I, \\Sigma_B = 2I \\Rightarrow \\text{quadratic boundary}\\]",
+      "source": "Assignment 6 - Bayes Error",
+      "tags": "gaussian-classification covariance decision-boundary quadratic",
+      "extra": "Equal covariances create linear boundaries (like parallel parking spaces), but different covariances create curved boundaries (like parking around a circular building). When one class is more 'spread out' (higher variance), its influence extends further but with lower density. The math involves quadratic terms from the Mahalanobis distance, creating elliptical or hyperbolic decision regions rather than straight lines."
+    },
+    {
+      "front": "How does gradient descent work in logistic regression training?",
+      "back": "Iteratively updates weights by moving in direction of negative gradient to minimize cross-entropy loss",
+      "formula": "\\[\\mathbf{w} \\leftarrow \\mathbf{w} - \\alpha \\nabla L(\\mathbf{w})\\]",
+      "source": "Assignment 6 - Logistic Regression",
+      "tags": "gradient-descent optimization training logistic-regression",
+      "extra": "Imagine rolling a ball down a hill to find the bottom - gradient descent follows the steepest downward slope at each step. The gradient points toward steepest increase, so negative gradient points toward steepest decrease in loss. Learning rate α controls step size: too large causes overshooting, too small causes slow convergence. Unlike linear regression (closed-form solution), logistic regression requires iterative optimization due to non-linear sigmoid/softmax functions."
+    }
+  ]
+}

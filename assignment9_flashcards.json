@@ -1,0 +1,68 @@
+{
+  "assignment9_flashcards": [
+    {
+      "front": "What is the core optimization problem that SVMs solve for linearly separable data?",
+      "back": "Minimize the norm of the weight vector while maintaining correct classification with maximum margin",
+      "formula": "\\[\\min_{w,b} \\frac{1}{2}||w||^2 \\text{ subject to } y_i(w^T x_i + b) \\geq 1 \\text{ for all } i\\]",
+      "source": "Assignment 9 - SVM Optimization",
+      "tags": "svm optimization margin hyperplane",
+      "extra": "This formulation finds the hyperplane that maximally separates classes. The constraint ensures all points are correctly classified with at least unit margin. The squared norm minimization leads to the largest possible margin, making SVMs robust to new data. Think of it as finding the widest 'street' between two neighborhoods (classes)."
+    },
+    {
+      "front": "Why do only support vectors determine the SVM decision boundary?",
+      "back": "Support vectors are the only points that lie exactly on the margin boundaries and have non-zero Lagrange multipliers (alpha > 0)",
+      "formula": "\\[f(x) = \\sum_{i \\in SV} \\alpha_i y_i K(x_i, x) + b\\]",
+      "source": "Assignment 9 - Support Vectors",
+      "tags": "support-vectors lagrange-multipliers kkt-conditions",
+      "extra": "In the dual formulation, points far from the boundary have alpha = 0 and don't contribute to the decision function. Only support vectors (points on or within the margin) have alpha > 0. This is like having a democracy where only the 'swing voters' (support vectors) determine the outcome - the strongly committed voters on either side don't affect the final decision boundary."
+    },
+    {
+      "front": "What is the kernel trick and why is it computationally advantageous?",
+      "back": "The kernel trick allows computing inner products in high-dimensional feature spaces without explicitly mapping data to those spaces",
+      "formula": "\\[K(x, z) = \\phi(x)^T \\phi(z)\\]",
+      "source": "Assignment 9 - Kernel Trick",
+      "tags": "kernel-trick feature-mapping computational-efficiency",
+      "extra": "Instead of transforming data to high dimensions and computing dot products there, kernels compute the same result directly in the original space. For example, the RBF kernel implicitly maps to infinite dimensions but only requires computing a simple exponential function. It's like having a shortcut through a mountain instead of climbing over it - you get to the same destination much faster."
+    },
+    {
+      "front": "Why does the RBF kernel correspond to an infinite-dimensional feature space?",
+      "back": "The RBF kernel's exponential can be expanded as an infinite Taylor series, creating infinitely many feature dimensions",
+      "formula": "\\[K(x,z) = e^{-\\gamma||x-z||^2} = \\sum_{n=0}^{\\infty} \\frac{(-\\gamma||x-z||^2)^n}{n!}\\]",
+      "source": "Assignment 9 - RBF Kernel Theory",
+      "tags": "rbf-kernel infinite-dimensions taylor-series feature-space",
+      "extra": "Each term in the Taylor expansion represents a different polynomial degree, creating an infinite hierarchy of features. This allows RBF SVMs to capture arbitrarily complex decision boundaries. The gamma parameter controls the 'locality' - high gamma creates tight, local decision regions around support vectors, while low gamma creates smoother, more global boundaries."
+    },
+    {
+      "front": "How do different kernels handle different types of non-linear patterns?",
+      "back": "Linear kernels handle linearly separable data, polynomial kernels capture curved boundaries, and RBF kernels excel at complex local patterns",
+      "formula": "\\[\\text{Linear: } K(x,z) = x^T z \\text{, Poly: } K(x,z) = (x^T z + c)^d \\text{, RBF: } K(x,z) = e^{-\\gamma||x-z||^2}\\]",
+      "source": "Assignment 9 - Kernel Comparison",
+      "tags": "kernel-types polynomial-kernel rbf-kernel pattern-recognition",
+      "extra": "Think of kernels as different 'lenses' for viewing data: linear kernel sees straight lines, polynomial kernel sees curves and bends, RBF kernel sees local bumps and valleys. XOR patterns need RBF kernels for their local decision regions, while moons might work with polynomial kernels for their curved boundaries. The choice depends on the geometric nature of your data's class separation."
+    },
+    {
+      "front": "What are the key differences between SVM and Logistic Regression in terms of loss function and objective?",
+      "back": "SVM uses hinge loss and maximizes margin, while Logistic Regression uses log-likelihood loss and maximizes probability",
+      "formula": "\\[\\text{SVM: } L_{hinge} = \\max(0, 1-yf(x)) \\text{, LogReg: } L_{log} = \\log(1 + e^{-yf(x)})\\]",
+      "source": "Assignment 9 - SVM vs Logistic Regression",
+      "tags": "svm logistic-regression hinge-loss log-likelihood margin",
+      "extra": "SVM's hinge loss is 'sparse' - it's zero for correctly classified points beyond the margin, making SVMs focus only on difficult cases (support vectors). Logistic regression's smooth log loss considers all points, providing probability estimates. SVM is like a bouncer who only cares about troublemakers near the boundary, while logistic regression is like a poll taker who considers everyone's opinion with varying weights."
+    },
+    {
+      "front": "How does the regularization parameter C affect SVM behavior?",
+      "back": "Higher C values create harder margins with less tolerance for misclassification, while lower C values allow softer margins with more flexibility",
+      "formula": "\\[\\min_{w,b,\\xi} \\frac{1}{2}||w||^2 + C\\sum_i \\xi_i \\text{ subject to } y_i(w^T x_i + b) \\geq 1 - \\xi_i\\]",
+      "source": "Assignment 9 - SVM Regularization",
+      "tags": "regularization c-parameter soft-margin overfitting bias-variance",
+      "extra": "C controls the bias-variance tradeoff: high C can overfit by trying to classify every training point perfectly, creating complex boundaries. Low C prioritizes simplicity and generalization over perfect training accuracy. It's like tuning the strictness of a rule - too strict (high C) and you might miss the bigger picture, too lenient (low C) and you might not capture important details. The optimal C depends on your data's noise level and complexity."
+    },
+    {
+      "front": "What is the decision function in SVMs and how is it computed using the kernel trick?",
+      "back": "The decision function computes signed distance from the hyperplane using weighted kernel evaluations with support vectors",
+      "formula": "\\[f(x) = \\sum_{i \\in SV} \\alpha_i y_i K(x, x_i) + b\\]",
+      "source": "Assignment 9 - Decision Function",
+      "tags": "decision-function kernel-trick support-vectors prediction",
+      "extra": "The decision function is like a weighted voting system where each support vector casts a vote (alpha_i * y_i) based on its similarity to the test point (K(x, x_i)). Points vote stronger when they're more similar (high kernel value) and when they were important during training (high alpha). The bias b shifts the overall decision threshold. The sign determines the class, while the magnitude indicates confidence in the prediction."
+    }
+  ]
+}

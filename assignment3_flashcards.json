@@ -1,0 +1,68 @@
+{
+  "assignment3_flashcards": [
+    {
+      "front": "What is the Normal Matrix in linear regression and what are its key mathematical properties?",
+      "back": "The Normal Matrix is X^T X that appears in the linear regression solution. It is symmetric and positive semi-definite.",
+      "formula": "\\[\\text{Normal Matrix} = X^T X \\in \\mathbb{R}^{d \\times d}\\]",
+      "source": "Assignment 3 - Normal Matrix Properties",
+      "tags": "linear-regression normal-matrix matrix-properties",
+      "extra": "Think of it as the 'fingerprint' of your data's structure. Symmetric means it's balanced around its diagonal (like a mirror). Positive semi-definite means all eigenvalues ≥ 0, indicating the data doesn't contradict itself. This matrix encodes how features correlate with each other - crucial for understanding if your regression problem is well-posed."
+    },
+    {
+      "front": "When does linear regression have a unique solution?",
+      "back": "When the Normal Matrix X^T X is positive definite (all eigenvalues > 0), which requires linearly independent columns in X.",
+      "formula": "\\[\\hat{w} = (X^T X)^{-1} X^T y \\text{ exists uniquely when } X^T X \\text{ is invertible}\\]",
+      "source": "Assignment 3 - Unique Solutions",
+      "tags": "linear-regression uniqueness invertibility",
+      "extra": "Analogy: Imagine trying to find the intersection of lines. If features are linearly dependent, it's like having parallel lines - no unique intersection. Independent features give you lines that meet at exactly one point. In ML terms: you need more training examples than features (n > d) and no redundant features for a unique solution."
+    },
+    {
+      "front": "What are feature maps and how do they extend linear regression capabilities?",
+      "back": "Feature maps Φ(X) transform input data into higher-dimensional space, allowing linear models to capture non-linear patterns.",
+      "formula": "\\[\\Phi: \\mathbb{R}^d \\to \\mathbb{R}^D, \\quad \\hat{y} = \\Phi(X)w\\]",
+      "source": "Assignment 3 - Feature Maps",
+      "tags": "feature-maps non-linear-regression polynomial-features",
+      "extra": "It's like putting on special glasses that reveal hidden patterns. A polynomial feature map x → [1, x, x², x³] lets you fit curves with a 'linear' model. RBF features create local bumps, piecewise features create step functions. The key insight: make data linearly separable in a higher dimension rather than wrestling with non-linearity directly."
+    },
+    {
+      "front": "How do polynomial features work and what's the trade-off with degree?",
+      "back": "Polynomial features create powers of input: [x, x², x³, ...]. Higher degrees fit training data better but risk overfitting.",
+      "formula": "\\[\\Phi_{poly}(x) = [1, x, x^2, x^3, \\ldots, x^d]\\]",
+      "source": "Assignment 3 - Polynomial Features",
+      "tags": "polynomial-features overfitting model-complexity",
+      "extra": "Think of polynomial degree as 'flexibility knob'. Low degree = rigid ruler (underfitting), high degree = bendy snake (overfitting). Degree 1 fits lines, degree 2 parabolas, degree 3 S-curves. The sweet spot balances expressiveness with generalization. Watch training vs validation error: when they diverge, you've gone too far."
+    },
+    {
+      "front": "What are Radial Basis Function (RBF) features and when are they useful?",
+      "back": "RBF features create localized 'bumps' centered at specific positions, useful for capturing local patterns in data.",
+      "formula": "\\[\\Phi_{RBF}(x) = \\exp\\left(-\\frac{(x - \\mu)^2}{2\\sigma^2}\\right)\\]",
+      "source": "Assignment 3 - RBF Features",
+      "tags": "rbf-features gaussian-basis local-features",
+      "extra": "Imagine placing 'hills' of influence at key data points. Each RBF is like a spotlight with Gaussian falloff - bright at center, dim at edges. Scale σ controls width: small σ = sharp peaks (local fit), large σ = broad hills (smooth fit). Perfect for data with local structure, like modeling city temperatures where nearby locations are similar."
+    },
+    {
+      "front": "What computational challenges arise with high-dimensional linear regression?",
+      "back": "Memory requirements grow quadratically (O(d²)) for storing X^T X, making matrix inversion computationally prohibitive.",
+      "formula": "\\[\\text{Memory for } X^T X = d^2 \\times 4 \\text{ bytes (float32)}\\]",
+      "source": "Assignment 3 - Computational Challenges",
+      "tags": "computational-complexity memory-requirements high-dimensional",
+      "extra": "Real example: 512×512×3 images = 786,432 features. X^T X needs 2.3 TB memory! Even supercomputers struggle. Solutions: (1) Gradient descent avoids computing X^T X, (2) Dimensionality reduction via PCA, (3) Regularization prevents overfitting, (4) Online learning processes data in chunks. The curse of dimensionality is real - plan accordingly."
+    },
+    {
+      "front": "How do piecewise features work and what patterns do they capture?",
+      "back": "Piecewise features divide input space into regions. Constant creates step functions, linear creates connected line segments.",
+      "formula": "\\[\\Phi_{piece}(x) = \\begin{cases} 1 & \\text{if } a \\leq x \\leq b \\\\ 0 & \\text{otherwise} \\end{cases}\\]",
+      "source": "Assignment 3 - Piecewise Features",
+      "tags": "piecewise-features step-functions local-models",
+      "extra": "Think of building a staircase approximation to curved data. Piecewise constant = stairs with flat steps, piecewise linear = connecting the steps with ramps. Great for data with distinct regimes (like different price brackets) or when you suspect the relationship changes at certain thresholds. Each piece models a local linear relationship."
+    },
+    {
+      "front": "What is RMSE and why is it important for regression evaluation?",
+      "back": "Root Mean Square Error measures average prediction error in original units. Lower RMSE indicates better model performance.",
+      "formula": "\\[RMSE = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2}\\]",
+      "source": "Assignment 3 - Model Evaluation",
+      "tags": "rmse evaluation-metrics regression-performance",
+      "extra": "RMSE is like a 'average wrongness' meter in original units. If predicting house prices, RMSE = $10k means you're typically off by $10k. It penalizes large errors more than small ones (squared term), so it's sensitive to outliers. Compare training vs test RMSE: similar values = good generalization, large gap = overfitting. Target: RMSE < 4.0 for Boston housing is a solid benchmark."
+    }
+  ]
+}

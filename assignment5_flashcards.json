@@ -1,0 +1,68 @@
+{
+  "assignment5_flashcards": [
+    {
+      "front": "What is the fundamental independence assumption of Naïve Bayes classifiers?",
+      "back": "Features are conditionally independent given the class label",
+      "formula": "\\[P(X_1, X_2, ..., X_n | C) = \\prod_{i=1}^{n} P(X_i | C)\\]",
+      "source": "Assignment 5 - Naïve Bayes Theory",
+      "tags": "naive-bayes independence conditional-independence",
+      "extra": "This means that knowing the value of one feature doesn't provide information about another feature, once we know the class. Like medical symptoms: given a disease diagnosis, fever doesn't tell us about cough likelihood. This assumption is 'naïve' because features are often correlated in reality, but the classifier works surprisingly well despite this simplification. Violations of this assumption can lead to overconfident predictions and bias errors."
+    },
+    {
+      "front": "How does parameter complexity scale for joint likelihood tables vs. Naïve Bayes?",
+      "back": "Joint tables: exponential (2^n parameters), Naïve Bayes: linear (2n parameters) for binary features",
+      "formula": "\\[\\text{Joint: } 2^n \\text{ vs. NB: } 2n \\text{ parameters}\\]",
+      "source": "Assignment 5 - Complexity Analysis",
+      "tags": "naive-bayes complexity scalability parameters",
+      "extra": "This is why Naïve Bayes is practical for high-dimensional data. For 10 binary features: joint table needs 1024 parameters, Naïve Bayes only 20. The independence assumption trades modeling accuracy for computational efficiency and sample complexity. With limited training data, the parameter reduction often leads to better generalization despite the modeling bias."
+    },
+    {
+      "front": "What is Laplace smoothing and why is it essential for Naïve Bayes?",
+      "back": "Add α (usually 1) to all counts to prevent zero probabilities for unseen feature-class combinations",
+      "formula": "\\[P(X_i = v | C = c) = \\frac{\\text{count}(X_i = v, C = c) + \\alpha}{\\text{count}(C = c) + \\alpha |V_i|}\\]",
+      "source": "Assignment 5 - Flu Detection",
+      "tags": "laplace-smoothing naive-bayes zero-probability",
+      "extra": "Without smoothing, if a feature value never appears with a class in training data, P(feature|class) = 0, making the entire prediction zero due to multiplication. This is catastrophic for new data. Laplace smoothing ensures all probabilities are non-zero. Think of it as assuming we've seen each combination at least once. The parameter α controls smoothing strength: α=1 is standard, larger α means more uniform distribution."
+    },
+    {
+      "front": "How does Gaussian Naïve Bayes handle continuous features?",
+      "back": "Assumes each feature follows a Gaussian distribution within each class, estimated by sample mean and variance",
+      "formula": "\\[P(X_i = x | C = c) = \\frac{1}{\\sqrt{2\\pi\\sigma_{ic}^2}} \\exp\\left(-\\frac{(x - \\mu_{ic})^2}{2\\sigma_{ic}^2}\\right)\\]",
+      "source": "Assignment 5 - Gaussian Implementation",
+      "tags": "gaussian-naive-bayes continuous-features probability-density",
+      "extra": "For each class c and feature i, we estimate μ_ic (mean) and σ²_ic (variance) from training data. During prediction, we evaluate the Gaussian PDF at the test point. This extends Naïve Bayes beyond categorical data to real-valued features like temperature, height, or medical measurements. The Gaussian assumption may not hold in practice, but often works well. Standardization often improves performance."
+    },
+    {
+      "front": "When does the conditional independence assumption of Naïve Bayes lead to high bias?",
+      "back": "When features are strongly correlated within classes, creating dependency that violates the independence assumption",
+      "formula": "\\[\\text{Bias occurs when: } X_1 \\not\\perp X_2 | C\\]",
+      "source": "Assignment 5 - Independence Analysis",
+      "tags": "naive-bayes bias independence-violation correlation",
+      "extra": "Real-world example: predicting age from blood pressure and cholesterol. These are positively correlated within each age group, violating independence. Naïve Bayes will overweight evidence when both are high/low together. Hospital admission example: diabetes and gallbladder disease appear independent overall, but given hospitalization, they become negatively correlated (if one is absent, the other is more likely present to explain admission)."
+    },
+    {
+      "front": "How do you compute posterior probabilities in Naïve Bayes classification?",
+      "back": "Use Bayes' theorem with class priors and the product of feature likelihoods",
+      "formula": "\\[P(C | X_1, ..., X_n) = \\frac{P(C) \\prod_{i=1}^n P(X_i | C)}{P(X_1, ..., X_n)}\\]",
+      "source": "Assignment 5 - Bayes Classification",
+      "tags": "bayes-theorem posterior-probability classification",
+      "extra": "Step-by-step: (1) Calculate class priors P(C) from training data, (2) Calculate feature likelihoods P(X_i|C) for each feature-class pair, (3) Multiply prior by all feature likelihoods, (4) Normalize by evidence (or just compare unnormalized values). The denominator P(X) is often ignored for classification since it's the same for all classes. Use log-probabilities to avoid numerical underflow with many features."
+    },
+    {
+      "front": "What is the relationship between marginal and conditional independence?",
+      "back": "Neither direction holds in general: X₁ ⊥ X₂ does not imply X₁ ⊥ X₂|C, and X₁ ⊥ X₂|C does not imply X₁ ⊥ X₂",
+      "formula": "\\[X_1 \\perp X_2 \\not\\Rightarrow X_1 \\perp X_2 | C \\text{ and } X_1 \\perp X_2 | C \\not\\Rightarrow X_1 \\perp X_2\\]",
+      "source": "Assignment 5 - Independence Theory",
+      "tags": "independence conditional-independence marginal-independence",
+      "extra": "Counterexample 1: ABO blood type and personality traits are independent overall (marginal), but may show association within sexes (conditional dependence). Counterexample 2: Fever and headache are conditionally independent given flu status (both caused directly by flu), but marginally dependent (often co-occur during flu season). This subtlety is crucial for understanding when Naïve Bayes assumptions are violated."
+    },
+    {
+      "front": "How does missing data affect Naïve Bayes classification?",
+      "back": "Simply omit the missing features from the likelihood calculation - the independence assumption makes this straightforward",
+      "formula": "\\[P(C | X_{observed}) \\propto P(C) \\prod_{i \\in observed} P(X_i | C)\\]",
+      "source": "Assignment 5 - Missing Data Handling",
+      "tags": "missing-data naive-bayes robustness",
+      "extra": "This is a major advantage of Naïve Bayes over many other classifiers. When a thermometer fails (missing temperature), we just exclude temperature from the calculation and use remaining features (fever, cough). The independence assumption means missing features don't affect the relationships between observed features. However, this changes the relative importance of features - fewer features means each remaining one has more weight in the decision."
+    }
+  ]
+}

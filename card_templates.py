@@ -83,6 +83,54 @@ body {
     color: #333 !important;
 }
 
+.analogy {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+    color: #333 !important;
+    font-style: italic;
+}
+
+.key-insight {
+    background-color: #e8f5e8;
+    border-left: 4px solid #4caf50;
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+    color: #333 !important;
+    font-weight: bold;
+}
+
+.technical {
+    background-color: #f3e5f5;
+    border-left: 4px solid #9c27b0;
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 13px;
+    color: #333 !important;
+    font-family: 'Courier New', monospace;
+}
+
+.connections {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+    color: #333 !important;
+}
+
+.practical {
+    background-color: #fce4ec;
+    border-left: 4px solid #e91e63;
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+    color: #333 !important;
+}
+
 .cloze {
     font-weight: bold;
     color: #1976d2;
@@ -94,12 +142,17 @@ ML_CARD_MODEL = genanki.Model(
     ML_MODEL_ID,
     'ML Foundations Card',
     fields=[
-        {'name': 'Front'},     # Question/concept
-        {'name': 'Back'},      # Answer/definition
-        {'name': 'Formula'},   # Mathematical expression
-        {'name': 'Source'},    # Assignment reference
-        {'name': 'Tags'},      # Topic tags
-        {'name': 'Extra'}      # Context/examples/code
+        {'name': 'Front'},        # Question/concept
+        {'name': 'Back'},         # Answer/definition
+        {'name': 'Formula'},      # Mathematical expression
+        {'name': 'Source'},       # Assignment reference
+        {'name': 'Tags'},         # Topic tags
+        {'name': 'Analogy'},      # Visual/conceptual analogies
+        {'name': 'KeyInsight'},   # Main takeaway/intuition
+        {'name': 'Technical'},    # Technical details/notes
+        {'name': 'Connections'},  # Links to other concepts
+        {'name': 'Practical'},    # Real-world applications/examples
+        {'name': 'Extra'}         # Additional context (backward compatibility)
     ],
     templates=[
         {
@@ -117,6 +170,21 @@ ML_CARD_MODEL = genanki.Model(
                 {{/Formula}}
                 <hr id="answer">
                 <div class="back">{{Back}}</div>
+                {{#Analogy}}
+                <div class="analogy"><strong>💡 Analogy:</strong> {{Analogy}}</div>
+                {{/Analogy}}
+                {{#KeyInsight}}
+                <div class="key-insight"><strong>🔑 Key Insight:</strong> {{KeyInsight}}</div>
+                {{/KeyInsight}}
+                {{#Technical}}
+                <div class="technical"><strong>⚙️ Technical:</strong> {{Technical}}</div>
+                {{/Technical}}
+                {{#Connections}}
+                <div class="connections"><strong>🔗 Connections:</strong> {{Connections}}</div>
+                {{/Connections}}
+                {{#Practical}}
+                <div class="practical"><strong>🎯 Practical:</strong> {{Practical}}</div>
+                {{/Practical}}
                 {{#Extra}}
                 <div class="extra">{{Extra}}</div>
                 {{/Extra}}
@@ -134,6 +202,21 @@ ML_CARD_MODEL = genanki.Model(
             ''',
             'afmt': '''
                 <div class="front">{{Back}}</div>
+                {{#Analogy}}
+                <div class="analogy"><strong>💡 Analogy:</strong> {{Analogy}}</div>
+                {{/Analogy}}
+                {{#KeyInsight}}
+                <div class="key-insight"><strong>🔑 Key Insight:</strong> {{KeyInsight}}</div>
+                {{/KeyInsight}}
+                {{#Technical}}
+                <div class="technical"><strong>⚙️ Technical:</strong> {{Technical}}</div>
+                {{/Technical}}
+                {{#Connections}}
+                <div class="connections"><strong>🔗 Connections:</strong> {{Connections}}</div>
+                {{/Connections}}
+                {{#Practical}}
+                <div class="practical"><strong>🎯 Practical:</strong> {{Practical}}</div>
+                {{/Practical}}
                 {{#Extra}}
                 <div class="extra">{{Extra}}</div>
                 {{/Extra}}
@@ -191,7 +274,7 @@ FORMULA_CARD_MODEL = genanki.Model(
     css=ML_CARD_CSS
 )
 
-def create_ml_note(front, back, formula="", source="", tags="", extra=""):
+def create_ml_note(front, back, formula="", source="", tags="", analogy="", key_insight="", technical="", connections="", practical="", extra=""):
     """Create a standard ML flashcard note"""
     # Handle empty fields (genanki requirement)
     fields = [
@@ -200,6 +283,11 @@ def create_ml_note(front, back, formula="", source="", tags="", extra=""):
         formula or " ",
         source or " ",
         tags or " ",
+        analogy or " ",
+        key_insight or " ",
+        technical or " ",
+        connections or " ",
+        practical or " ",
         extra or " "
     ]
     

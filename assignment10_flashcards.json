@@ -1,0 +1,68 @@
+{
+  "assignment10_flashcards": [
+    {
+      "front": "What is the key relationship between sigmoid and tanh activation functions?",
+      "back": "tanh(a) = 2×σ(2a) - 1, where σ is the sigmoid function",
+      "formula": "\\[\\tanh(a) = 2 \\cdot \\frac{1}{1 + e^{-2a}} - 1 = \\frac{e^a - e^{-a}}{e^a + e^{-a}}\\]",
+      "source": "Assignment 10 - Activation Functions",
+      "tags": "activation-functions sigmoid tanh neural-networks",
+      "extra": "This relationship shows that tanh is a scaled and shifted version of sigmoid. Tanh outputs range from -1 to 1 (zero-centered), while sigmoid outputs range from 0 to 1. The zero-centered property of tanh often makes training more stable by preventing bias in gradient directions, especially in deeper networks where gradients can accumulate."
+    },
+    {
+      "front": "Why can't a single neuron solve the XOR problem?",
+      "back": "A single neuron can only create linear decision boundaries, but XOR requires a non-linear boundary to separate the classes",
+      "formula": "\\[\\text{XOR: } (0,0) \\rightarrow 0, (0,1) \\rightarrow 1, (1,0) \\rightarrow 1, (1,1) \\rightarrow 0\\]",
+      "source": "Assignment 10 - Single Neuron Limitations",
+      "tags": "xor-problem linear-separability single-neuron limitations",
+      "extra": "The XOR function cannot be separated by any single straight line. Points (0,1) and (1,0) both output 1, while (0,0) and (1,1) both output 0 - they're diagonally opposite. This classic problem historically motivated the development of multi-layer perceptrons. It demonstrates that linear models (including single neurons) have fundamental representational limitations."
+    },
+    {
+      "front": "What is the forward propagation formula for a single neuron?",
+      "back": "z = Σ(wi × xi) + b, then output = σ(z) where σ is the activation function",
+      "formula": "\\[z = \\mathbf{w}^T \\mathbf{x} + b \\quad \\text{and} \\quad y = \\sigma(z) = \\frac{1}{1 + e^{-z}}\\]",
+      "source": "Assignment 10 - Single Neuron",
+      "tags": "forward-propagation neuron weighted-sum activation",
+      "extra": "Forward propagation is the process of computing a neuron's output. First, compute the weighted sum of inputs plus bias (linear combination). Then apply a non-linear activation function like sigmoid. This two-step process (linear → non-linear) is what gives neural networks their power. Without the activation function, multiple layers would collapse to a single linear transformation."
+    },
+    {
+      "front": "What is the key insight behind backpropagation in neural networks?",
+      "back": "Use the chain rule to compute gradients layer by layer, propagating error backwards from output to input",
+      "formula": "\\[\\frac{\\partial L}{\\partial w_i} = \\frac{\\partial L}{\\partial z} \\cdot \\frac{\\partial z}{\\partial w_i} = \\delta \\cdot x_i\\]",
+      "source": "Assignment 10 - Backpropagation",
+      "tags": "backpropagation chain-rule gradients training",
+      "extra": "Backpropagation applies calculus chain rule to efficiently compute gradients in multi-layer networks. The error signal δ flows backwards through the network, with each layer computing its contribution to the total error. This allows updating all parameters simultaneously. The algorithm's efficiency (O(n) where n is network size) made training deep networks practical and sparked the deep learning revolution."
+    },
+    {
+      "front": "How do hidden layers enable neural networks to solve non-linear problems like XOR?",
+      "back": "Hidden layers create internal representations that transform the input space, making non-linearly separable problems linearly separable in the hidden space",
+      "formula": "\\[\\mathbf{h} = \\sigma(\\mathbf{W_1} \\mathbf{x} + \\mathbf{b_1}), \\quad y = \\sigma(\\mathbf{W_2} \\mathbf{h} + b_2)\\]",
+      "source": "Assignment 10 - Multi-layer Networks",
+      "tags": "hidden-layers representation-learning non-linear multi-layer",
+      "extra": "Hidden layers act as feature detectors that learn useful internal representations. For XOR, hidden neurons might learn to detect patterns like 'exactly one input is 1' or 'both inputs are the same'. These learned features transform the problem into a space where a linear classifier (output layer) can succeed. This is the core principle behind deep learning: hierarchical feature learning."
+    },
+    {
+      "front": "What is binary cross-entropy loss and why is it used for binary classification?",
+      "back": "L = -[y×log(ŷ) + (1-y)×log(1-ŷ)]. It penalizes confident wrong predictions more heavily and has nice mathematical properties for gradient descent",
+      "formula": "\\[L = -\\frac{1}{m} \\sum_{i=1}^{m} [y_i \\log(\\hat{y}_i) + (1-y_i) \\log(1-\\hat{y}_i)]\\]",
+      "source": "Assignment 10 - Loss Functions",
+      "tags": "binary-cross-entropy loss-function classification training",
+      "extra": "Binary cross-entropy is the maximum likelihood loss for Bernoulli distributions. It heavily penalizes confident wrong predictions (when model outputs 0.9 but true label is 0). The logarithmic nature ensures the gradient flows properly for sigmoid outputs. As predictions approach the correct class, loss approaches 0; as they approach the wrong class, loss approaches infinity, providing strong learning signals."
+    },
+    {
+      "front": "What is the vanishing gradient problem and how does choice of activation function affect it?",
+      "back": "Gradients become exponentially smaller in deeper layers. Sigmoid derivatives max at 0.25, causing gradients to shrink. Tanh (max derivative 1) and ReLU help mitigate this",
+      "formula": "\\[\\sigma'(z) = \\sigma(z)(1-\\sigma(z)) \\leq 0.25, \\quad \\tanh'(z) = 1-\\tanh^2(z) \\leq 1\\]",
+      "source": "Assignment 10 - Activation Functions",
+      "tags": "vanishing-gradients activation-functions deep-networks training",
+      "extra": "In deep networks, gradients multiply through layers during backpropagation. If each layer's gradient is less than 1, the product becomes exponentially small, making early layers learn very slowly. Sigmoid's maximum derivative is 0.25, so gradients can shrink by 75% per layer. Tanh is better (max derivative 1), and ReLU avoids saturation entirely. This insight drives modern activation function choices."
+    },
+    {
+      "front": "What are the key differences between training single neurons vs multi-layer networks?",
+      "back": "Single neurons: simple gradient computation, linear boundaries only. Multi-layer: requires backpropagation through layers, can learn non-linear patterns, more complex optimization landscape",
+      "formula": "\\[\\text{Single: } \\frac{\\partial L}{\\partial w} = (\\hat{y}-y) \\cdot x, \\quad \\text{Multi: } \\frac{\\partial L}{\\partial W_1} = \\frac{\\partial L}{\\partial W_2} \\cdot \\frac{\\partial W_2}{\\partial h} \\cdot \\frac{\\partial h}{\\partial W_1}\\]",
+      "source": "Assignment 10 - Network Architectures",
+      "tags": "single-neuron multi-layer training complexity architecture",
+      "extra": "Single neurons have convex loss landscapes and guaranteed convergence to global minimum. Multi-layer networks have non-convex loss surfaces with many local minima, requiring careful initialization and learning rates. However, this complexity enables universal approximation - multi-layer networks can theoretically approximate any continuous function. The trade-off is between simplicity/interpretability (single neuron) and expressiveness (multi-layer)."
+    }
+  ]
+}

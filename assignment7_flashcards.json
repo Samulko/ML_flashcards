@@ -1,0 +1,60 @@
+{
+  "assignment7_flashcards": [
+    {
+      "front": "What is information gain in decision trees and how is it calculated?",
+      "back": "Information gain measures how much a feature reduces uncertainty (entropy) when splitting data. It's the difference between parent entropy and weighted average of children entropies.",
+      "formula": "\\[IG(S,A) = H(S) - \\sum_{v \\in Values(A)} \\frac{|S_v|}{|S|} H(S_v)\\]",
+      "source": "Assignment 7 - Decision Tree Splitting",
+      "tags": "decision-trees information-gain entropy splitting-criteria",
+      "extra": "Think of information gain like organizing a messy room - each split should create more organized (less random) groups. Higher information gain means better splits. In the mushroom example, the optimal first split maximizes this measure. Normalized information gain adjusts for bias toward features with more possible values, ensuring fair comparison between different attributes."
+    },
+    {
+      "front": "What is entropy in decision trees and what does it measure?",
+      "back": "Entropy measures the impurity or randomness in a dataset. Pure nodes (all same class) have entropy 0, while maximally mixed nodes approach entropy 1.",
+      "formula": "\\[H(S) = -\\sum_{i=1}^{c} p_i \\log_2(p_i)\\]",
+      "source": "Assignment 7 - Impurity Measures",
+      "tags": "decision-trees entropy impurity-measure information-theory",
+      "extra": "Entropy is like measuring chaos in a group. A classroom with all students paying attention (pure) has low entropy, while a classroom with half sleeping, half talking has high entropy. Decision trees aim to create pure leaf nodes by reducing entropy at each split. Alternative measures include Gini impurity, but entropy connects directly to information theory and provides intuitive logarithmic scaling."
+    },
+    {
+      "front": "How do you adapt decision trees from classification to regression problems?",
+      "back": "Change the splitting criterion from entropy/Gini to variance reduction, use mean (not mode) for leaf predictions, and employ MSE or MAE for evaluation instead of accuracy.",
+      "formula": "\\[Variance = \\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\bar{y})^2\\]",
+      "source": "Assignment 7 - Regression Trees",
+      "tags": "decision-trees regression classification adaptation variance-reduction",
+      "extra": "Converting trees for regression is like changing from sorting colored balls (discrete categories) to organizing balls by weight (continuous values). Instead of asking 'which class appears most?', we ask 'what's the average value?'. Variance replaces entropy as our measure of impurity - high variance means the values in a node are spread out, low variance means they're similar. This makes regression trees powerful for predicting house prices, temperatures, or any continuous target."
+    },
+    {
+      "front": "What are the key hyperparameters for tuning decision tree performance?",
+      "back": "Max depth (tree height), max leaf nodes (terminal node count), min samples split (samples needed to split), and criterion (gini vs entropy for measuring split quality).",
+      "formula": "",
+      "source": "Assignment 7 - Hyperparameter Tuning", 
+      "tags": "decision-trees hyperparameters overfitting model-selection cross-validation",
+      "extra": "Hyperparameter tuning is like adjusting the rules for growing a tree. Max depth prevents the tree from becoming too tall and overfitting (like pruning). Min samples split ensures splits are statistically meaningful (don't split on tiny groups). Max leaf nodes controls overall complexity. The criterion choice (gini vs entropy) affects splitting decisions - gini is faster to compute, entropy connects to information theory. Use cross-validation to find the sweet spot between underfitting and overfitting."
+    },
+    {
+      "front": "What is the difference between Gini impurity and Entropy as splitting criteria?",
+      "back": "Both measure node impurity, but Gini uses squared probabilities while Entropy uses logarithms. Gini is computationally faster; Entropy connects to information theory and tends to create more balanced trees.",
+      "formula": "\\[Gini = 1 - \\sum_{i=1}^{c} p_i^2\\] vs \\[Entropy = -\\sum_{i=1}^{c} p_i \\log_2(p_i)\\]",
+      "source": "Assignment 7 - Splitting Criteria",
+      "tags": "decision-trees gini-impurity entropy splitting-criteria impurity-measures",
+      "extra": "Choosing between Gini and Entropy is like choosing between two different ways to measure messiness. Gini is like counting mismatched pairs - faster but less precise. Entropy is like measuring information content - slower but more theoretically grounded. In practice, they often give similar results, but Entropy tends to produce more balanced splits and is preferred when you want to maximize information gain. Gini is default in many implementations due to computational efficiency."
+    },
+    {
+      "front": "How do you prevent overfitting in decision trees during training?",
+      "back": "Control tree complexity through pre-pruning (max depth, min samples split, max leaf nodes) or post-pruning, and use cross-validation to select optimal hyperparameters.",
+      "formula": "",
+      "source": "Assignment 7 - Overfitting Prevention",
+      "tags": "decision-trees overfitting pruning regularization cross-validation",
+      "extra": "Preventing overfitting is like teaching someone to generalize rather than memorize. An overfitted tree is like a student who memorizes answers but can't handle new questions. Pre-pruning sets growth limits during training (like setting study guidelines), while post-pruning removes branches after growing (like editing an essay). Cross-validation helps find the right balance - too simple and you underfit (poor performance), too complex and you overfit (good training, poor testing). The goal is a tree that captures true patterns, not noise."
+    },
+    {
+      "front": "What evaluation metrics should you use for decision tree classification and why?",
+      "back": "Use precision (correct positive predictions), recall (finding all positives), F1-score (harmonic mean of precision/recall), and confusion matrix for comprehensive performance assessment.",
+      "formula": "\\[Precision = \\frac{TP}{TP + FP}\\], \\[Recall = \\frac{TP}{TP + FN}\\], \\[F1 = 2 \\cdot \\frac{Precision \\cdot Recall}{Precision + Recall}\\]",
+      "source": "Assignment 7 - Model Evaluation",
+      "tags": "decision-trees evaluation-metrics precision recall f1-score classification-performance",
+      "extra": "Evaluation metrics tell the complete story of your model's performance. Accuracy alone can be misleading with imbalanced datasets (like the Titanic where more people died than survived). Precision answers 'Of those I predicted would survive, how many actually did?' Recall answers 'Of those who actually survived, how many did I find?' F1-score balances both when you need a single metric. Think of medical diagnosis: high precision means few false alarms, high recall means catching all sick patients. Use confusion matrix to see exactly where your tree makes mistakes."
+    }
+  ]
+}
