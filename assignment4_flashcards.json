@@ -6,7 +6,7 @@
       "formula": "\\[w^* = (X^T X + \\lambda I)^{-1} X^T y\\]",
       "source": "Assignment 4 - Ridge Regression",
       "tags": "ridge-regression regularization linear-algebra",
-      "extra": "The λ parameter controls regularization strength. Higher λ = more regularization = simpler model. This prevents overfitting by penalizing large coefficients. Unlike OLS which can fail when features > samples, ridge regression always has a solution due to the λI term making the matrix invertible."
+      "extra": "ANALOGY: Like adding a small amount of noise to guarantee you can solve the equation - λI acts as a 'numerical stabilizer' that prevents matrix inversion problems.\n\nKEY INSIGHT: The λI term serves dual purposes - regularization (shrinks coefficients) and numerical stability (ensures invertibility).\n\nDIFFERENCES FROM OLS:\n• OLS: w* = (X^T X)^(-1) X^T y - can fail if X^T X is singular\n• Ridge: w* = (X^T X + λI)^(-1) X^T y - always invertible since eigenvalues get λ added\n\nTECHNICAL DETAILS:\n• λ parameter controls regularization strength\n• Higher λ = more regularization = simpler model = more bias, less variance\n• λI makes all eigenvalues positive, ensuring positive definite matrix\n\nWHEN OLS FAILS:\n• n < d (more features than samples)\n• Multicollinearity (perfectly correlated features)\n• Numerical precision issues\n\nCONNECTIONS: Related to Tikhonov regularization, bias-variance tradeoff, matrix conditioning\n\nPRACTICAL: Ridge always has a solution, making it more robust than OLS for high-dimensional or ill-conditioned problems"
     },
     {
       "front": "Why does Ridge Regression use the L2 penalty term λ||w||₂² and what effect does it have on model coefficients?",
