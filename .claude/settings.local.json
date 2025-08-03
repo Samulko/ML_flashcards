@@ -15,7 +15,9 @@
       "Bash(git push:*)",
       "Bash(pip install:*)",
       "Bash(find:*)",
-      "Bash(uv add:*)"
+      "Bash(uv add:*)",
+      "Bash(grep:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

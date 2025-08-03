@@ -6,7 +6,7 @@
       "formula": "\\[\\tanh(a) = 2 \\cdot \\frac{1}{1 + e^{-2a}} - 1 = \\frac{e^a - e^{-a}}{e^a + e^{-a}}\\]",
       "source": "Assignment 10 - Activation Functions",
       "tags": "activation-functions sigmoid tanh neural-networks",
-      "extra": "This relationship shows that tanh is a scaled and shifted version of sigmoid. Tanh outputs range from -1 to 1 (zero-centered), while sigmoid outputs range from 0 to 1. The zero-centered property of tanh often makes training more stable by preventing bias in gradient directions, especially in deeper networks where gradients can accumulate."
+      "extra": "ANALOGY: Like two different temperature scales - Celsius (tanh: -1 to 1) vs a shifted scale (sigmoid: 0 to 1). Both measure the same thing but with different ranges.\n\nKEY INSIGHT: Tanh is a scaled and shifted version of sigmoid. The zero-centered property of tanh often makes training more stable.\n\nTECHNICAL: Tanh outputs range from -1 to 1 (zero-centered), while sigmoid outputs range from 0 to 1. Mathematical relationship: tanh(a) = 2×σ(2a) - 1.\n\nCONNECTIONS: Both are sigmoid-shaped functions, related to logistic function, hyperbolic functions\n\nPRACTICAL: Zero-centered tanh prevents bias in gradient directions, especially important in deeper networks where gradients accumulate."
     },
     {
       "front": "Why can't a single neuron solve the XOR problem?",
@@ -22,7 +22,7 @@
       "formula": "\\[z = \\mathbf{w}^T \\mathbf{x} + b \\quad \\text{and} \\quad y = \\sigma(z) = \\frac{1}{1 + e^{-z}}\\]",
       "source": "Assignment 10 - Single Neuron",
       "tags": "forward-propagation neuron weighted-sum activation",
-      "extra": "Forward propagation is the process of computing a neuron's output. First, compute the weighted sum of inputs plus bias (linear combination). Then apply a non-linear activation function like sigmoid. This two-step process (linear → non-linear) is what gives neural networks their power. Without the activation function, multiple layers would collapse to a single linear transformation."
+      "extra": "ANALOGY: Like a factory assembly line where raw materials (inputs) get weighted, combined, and then processed through a transformation machine (activation function) to produce the final product (output).\n\nKEY INSIGHT: Forward propagation is the fundamental computation in neural networks - a two-step process of linear combination followed by non-linear transformation.\n\nTECHNICAL: First compute weighted sum z = w^T x + b (linear transformation), then apply activation function σ(z) (non-linear transformation). The bias b shifts the activation threshold.\n\nCONNECTIONS: Foundation for backpropagation, generalizes to multi-layer networks, similar to biological neuron firing\n\nPRACTICAL: Without the activation function, multiple layers would collapse to a single linear transformation, eliminating the network's ability to learn complex patterns."
     },
     {
       "front": "What is the key insight behind backpropagation in neural networks?",
@@ -30,7 +30,7 @@
       "formula": "\\[\\frac{\\partial L}{\\partial w_i} = \\frac{\\partial L}{\\partial z} \\cdot \\frac{\\partial z}{\\partial w_i} = \\delta \\cdot x_i\\]",
       "source": "Assignment 10 - Backpropagation",
       "tags": "backpropagation chain-rule gradients training",
-      "extra": "Backpropagation applies calculus chain rule to efficiently compute gradients in multi-layer networks. The error signal δ flows backwards through the network, with each layer computing its contribution to the total error. This allows updating all parameters simultaneously. The algorithm's efficiency (O(n) where n is network size) made training deep networks practical and sparked the deep learning revolution."
+      "extra": "ANALOGY: Like tracing responsibility for a mistake backwards through a company hierarchy - 'How much did each department contribute to the final error?'\n\nKEY INSIGHT: Backpropagation applies calculus chain rule to efficiently compute gradients in multi-layer networks, making deep learning tractable.\n\nTECHNICAL: The error signal δ flows backwards through the network, with each layer computing its contribution to the total error. Algorithm complexity is O(n) where n is network size.\n\nCONNECTIONS: Foundation of deep learning, enables gradient descent optimization, relates to automatic differentiation\n\nPRACTICAL: This algorithm's efficiency made training deep networks practical and sparked the deep learning revolution. Without it, we'd be stuck with shallow networks."
     },
     {
       "front": "How do hidden layers enable neural networks to solve non-linear problems like XOR?",
@@ -38,7 +38,7 @@
       "formula": "\\[\\mathbf{h} = \\sigma(\\mathbf{W_1} \\mathbf{x} + \\mathbf{b_1}), \\quad y = \\sigma(\\mathbf{W_2} \\mathbf{h} + b_2)\\]",
       "source": "Assignment 10 - Multi-layer Networks",
       "tags": "hidden-layers representation-learning non-linear multi-layer",
-      "extra": "Hidden layers act as feature detectors that learn useful internal representations. For XOR, hidden neurons might learn to detect patterns like 'exactly one input is 1' or 'both inputs are the same'. These learned features transform the problem into a space where a linear classifier (output layer) can succeed. This is the core principle behind deep learning: hierarchical feature learning."
+      "extra": "ANALOGY: Hidden layers act like feature detectors - for XOR, hidden neurons might learn patterns like 'exactly one input is 1' or 'both inputs are the same', transforming the problem into a space where simple classification works.\n\nKEY INSIGHT: This is the core principle behind deep learning - hierarchical feature learning that transforms non-linearly separable problems into linearly separable ones.\n\nTECHNICAL: Each hidden layer applies linear transformation followed by non-linear activation, creating new representations that can make complex problems simpler.\n\nCONNECTIONS: Universal approximation theorem, representation learning, feature engineering\n\nPRACTICAL: This principle scales to deep networks solving vision, language, and other complex tasks."
     },
     {
       "front": "What is binary cross-entropy loss and why is it used for binary classification?",
@@ -46,7 +46,7 @@
       "formula": "\\[L = -\\frac{1}{m} \\sum_{i=1}^{m} [y_i \\log(\\hat{y}_i) + (1-y_i) \\log(1-\\hat{y}_i)]\\]",
       "source": "Assignment 10 - Loss Functions",
       "tags": "binary-cross-entropy loss-function classification training",
-      "extra": "Binary cross-entropy is the maximum likelihood loss for Bernoulli distributions. It heavily penalizes confident wrong predictions (when model outputs 0.9 but true label is 0). The logarithmic nature ensures the gradient flows properly for sigmoid outputs. As predictions approach the correct class, loss approaches 0; as they approach the wrong class, loss approaches infinity, providing strong learning signals."
+      "extra": "ANALOGY: Like a scoring system that heavily penalizes confident wrong answers - if you're 90% sure but wrong, you lose more points than if you were only 60% sure.\n\nKEY INSIGHT: Binary cross-entropy is the maximum likelihood loss for Bernoulli distributions, providing strong learning signals for binary classification.\n\nTECHNICAL: Logarithmic nature ensures proper gradient flow for sigmoid outputs. Loss approaches 0 for correct predictions, infinity for confident wrong predictions.\n\nCONNECTIONS: Maximum likelihood estimation, information theory, sigmoid activation\n\nPRACTICAL: Essential loss function for binary classification tasks - use with sigmoid output layer."
     },
     {
       "front": "What is the vanishing gradient problem and how does choice of activation function affect it?",
@@ -54,7 +54,7 @@
       "formula": "\\[\\sigma'(z) = \\sigma(z)(1-\\sigma(z)) \\leq 0.25, \\quad \\tanh'(z) = 1-\\tanh^2(z) \\leq 1\\]",
       "source": "Assignment 10 - Activation Functions",
       "tags": "vanishing-gradients activation-functions deep-networks training",
-      "extra": "In deep networks, gradients multiply through layers during backpropagation. If each layer's gradient is less than 1, the product becomes exponentially small, making early layers learn very slowly. Sigmoid's maximum derivative is 0.25, so gradients can shrink by 75% per layer. Tanh is better (max derivative 1), and ReLU avoids saturation entirely. This insight drives modern activation function choices."
+      "extra": "ANALOGY: Like whispers in a long telephone chain - each person makes the message a bit quieter, until the first person can barely hear the final result.\n\nKEY INSIGHT: In deep networks, gradients multiply through layers during backpropagation. If each layer's gradient is less than 1, the product becomes exponentially small.\n\nTECHNICAL: Sigmoid's maximum derivative is 0.25, so gradients can shrink by 75% per layer. Tanh is better (max derivative 1), ReLU avoids saturation entirely.\n\nCONNECTIONS: Chain rule, gradient descent, deep network training difficulties\n\nPRACTICAL: This insight drives modern activation function choices - ReLU and variants dominate deep learning."
     },
     {
       "front": "What are the key differences between training single neurons vs multi-layer networks?",
@@ -62,7 +62,7 @@
       "formula": "\\[\\text{Single: } \\frac{\\partial L}{\\partial w} = (\\hat{y}-y) \\cdot x, \\quad \\text{Multi: } \\frac{\\partial L}{\\partial W_1} = \\frac{\\partial L}{\\partial W_2} \\cdot \\frac{\\partial W_2}{\\partial h} \\cdot \\frac{\\partial h}{\\partial W_1}\\]",
       "source": "Assignment 10 - Network Architectures",
       "tags": "single-neuron multi-layer training complexity architecture",
-      "extra": "Single neurons have convex loss landscapes and guaranteed convergence to global minimum. Multi-layer networks have non-convex loss surfaces with many local minima, requiring careful initialization and learning rates. However, this complexity enables universal approximation - multi-layer networks can theoretically approximate any continuous function. The trade-off is between simplicity/interpretability (single neuron) and expressiveness (multi-layer)."
+      "extra": "ANALOGY: Single neurons are like simple math problems with one clear answer, while multi-layer networks are like complex optimization problems with many possible solutions.\n\nKEY INSIGHT: The trade-off is between simplicity/interpretability (single neuron) and expressiveness (multi-layer networks).\n\nTECHNICAL: Single neurons have convex loss landscapes with guaranteed global convergence. Multi-layer networks have non-convex loss surfaces with many local minima.\n\nCONNECTIONS: Universal approximation theorem, optimization theory, expressiveness vs complexity\n\nPRACTICAL: Multi-layer complexity enables approximating any continuous function, but requires careful initialization and learning rates."
     }
   ]
 }

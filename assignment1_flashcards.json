@@ -11,7 +11,7 @@
     {
       "front": "What is the IQR method for outlier detection?",
       "back": "Data points outside Q1 - 1.5×IQR or Q3 + 1.5×IQR bounds are considered outliers",
-      "formula": "\\[Outliers: x < Q1 - 1.5 \\times IQR \\text{ or } x > Q3 + 1.5 \\times IQR\\]",
+      "formula": "\\[Outliers: x &lt; Q1 - 1.5 \\times IQR \\text{ or } x &gt; Q3 + 1.5 \\times IQR\\]",
       "source": "Assignment 1 - Preprocessing", 
       "tags": "preprocessing outliers IQR statistics",
       "extra": "ANALOGY: Like defining 'normal' height range - most people fall within expected range, very short or very tall people are outliers. The 1.5 multiplier creates a 'fence' around typical values.\n\nKEY INSIGHT: IQR (Interquartile Range) = Q3 - Q1, captures the middle 50% of data. The 1.5× multiplier is a conventional choice that works well empirically.\n\nPRACTICAL APPLICATION: In crime rate analysis (CRIM feature), IQR method identified neighborhoods with extremely high crime as outliers, but these may be valid data points representing dangerous areas.\n\nTECHNICAL PROCESS:\n1. Calculate Q1 (25th percentile) and Q3 (75th percentile)\n2. Compute IQR = Q3 - Q1\n3. Set fences: Lower = Q1 - 1.5×IQR, Upper = Q3 + 1.5×IQR\n4. Flag points outside fences as outliers\n\nLIMITATIONS:\n• Assumes normal-ish distribution\n• May flag too many points in skewed data\n• Domain knowledge needed to decide if outliers are valid\n• 1.5 multiplier is arbitrary (some use 2.0 or 3.0)\n\nCONNECTIONS: Related to boxplots (outliers shown as points), robust statistics, data quality assessment\n\nALTERNATIVES: Z-score method (uses standard deviations), modified Z-score (uses median absolute deviation), domain-specific thresholds"

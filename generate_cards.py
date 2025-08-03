@@ -61,6 +61,30 @@ class MLFlashcardGenerator:
         cards = [
             # PCA (High Priority - New Topic)
             {
+                'front': 'Why is data standardization necessary before applying PCA?',
+                'back': 'PCA is sensitive to scale - features with larger ranges dominate principal components without standardization',
+                'formula': '\\\\[z = \\\\frac{x - \\\\mu}{\\\\sigma}\\\\]',
+                'source': 'Exam Q1a',
+                'tags': 'PCA standardization preprocessing',
+                'extra': '''CRITICAL INSIGHT: PCA finds directions of maximum variance. Without standardization, features with larger units (e.g., income in dollars vs age in years) will dominate just because of scale, not importance.
+
+EXAMPLE: Consider height (cm) and weight (kg):
+• Height: 150-200 cm (range = 50)
+• Weight: 50-100 kg (range = 50)
+But if weight was in grams (50000-100000g), its variance would be 1000x larger!
+
+STANDARDIZATION EFFECT:
+• Makes all features have mean=0, variance=1
+• Ensures PCA captures correlation patterns, not scale differences
+• Each feature contributes equally to finding principal components
+
+WHEN NOT TO STANDARDIZE:
+• When scale differences are meaningful (e.g., financial data where magnitude matters)
+• When all features already on same scale
+
+PRACTICAL: Use StandardScaler in sklearn before PCA'''
+            },
+            {
                 'front': 'What is Principal Component Analysis (PCA)?',
                 'back': 'Dimensionality reduction technique that finds linear combinations of features with maximum variance',
                 'formula': '',
@@ -206,6 +230,71 @@ CONVERGENCE:
 EMPTY CLUSTERS: Handle by reinitializing or using K-means++'''
             },
             {
+                'front': 'How does initialization impact K-means results?',
+                'back': 'K-means converges to local optima dependent on initial centroids - different initializations yield different clusterings',
+                'formula': '',
+                'source': 'Exam Q2c',
+                'tags': 'k-means initialization local-optima',
+                'extra': '''CRITICAL PROBLEM: K-means is non-convex - many local minima exist!
+
+INITIALIZATION METHODS:
+1. RANDOM: Pick k random data points as initial centroids
+   • Simple but high variance in results
+   • May pick outliers or clustered points
+
+2. K-MEANS++: Smart initialization
+   • First centroid: random
+   • Next centroids: probability ∝ squared distance to nearest existing centroid
+   • Spreads initial centroids apart
+   • Provably better expected results
+
+3. MULTIPLE RUNS: Run K-means n times with different random seeds
+   • Pick result with lowest WCSS
+   • sklearn's n_init parameter (default=10)
+
+IMPACT EXAMPLE:
+• Poor init: All centroids in one actual cluster → other clusters merged
+• Good init: Centroids spread across data → better separation
+
+PRACTICAL: Always use K-means++ (default in sklearn) and multiple runs'''
+            },
+            {
+                'front': 'What are the main limitations of K-means clustering?',
+                'back': 'Assumes spherical clusters of similar size/density, requires pre-specifying k, sensitive to outliers and initialization',
+                'formula': '',
+                'source': 'Exam Q2d',
+                'tags': 'k-means limitations assumptions',
+                'extra': '''COMPREHENSIVE LIMITATIONS:
+
+1. CLUSTER SHAPE: Only finds spherical/convex clusters
+   • Fails on crescents, rings, elongated clusters
+   • Solution: DBSCAN for arbitrary shapes
+
+2. CLUSTER SIZE: Assumes similar sizes
+   • Large cluster may be split, small clusters merged
+   • Solution: Hierarchical clustering
+
+3. CLUSTER DENSITY: Assumes similar densities
+   • Dense cluster dominates sparse ones
+   • Solution: DBSCAN or Mean Shift
+
+4. FIXED K: Must specify number of clusters
+   • No inherent way to determine optimal k
+   • Solution: Elbow method, silhouette analysis
+
+5. OUTLIER SENSITIVITY: Outliers affect centroid positions
+   • Single outlier can create its own cluster
+   • Solution: K-medoids, outlier removal
+
+6. HIGH DIMENSIONS: Curse of dimensionality
+   • Distances become meaningless
+   • Solution: PCA before clustering
+
+7. CATEGORICAL DATA: Requires numerical features
+   • Can't handle categories directly
+   • Solution: K-modes for categorical data'''
+            },
+            {
                 'front': 'What are the two steps of Lloyd\'s K-means algorithm?',
                 'back': 'Assignment step (assign points to nearest centroid) and Update step (recalculate centroids)',
                 'formula': '',
@@ -266,6 +355,68 @@ MATHEMATICAL: Takes expectation over latent variables Z given observed data X an
 CONNECTIONS:
 • Similar to K-means assignment step but with probabilities
 • Creates "responsibility" matrix showing how responsible each cluster is for each point'''
+            },
+            {
+                'front': 'How does EM algorithm apply to Gaussian Mixture Models?',
+                'back': 'E-step computes responsibilities (soft assignments), M-step updates means, covariances, and mixing coefficients',
+                'formula': '\\\\[\\\\gamma_{ik} = \\\\frac{\\\\pi_k N(x_i|\\\\mu_k,\\\\Sigma_k)}{\\\\sum_j \\\\pi_j N(x_i|\\\\mu_j,\\\\Sigma_j)}\\\\]',
+                'source': 'Exam Q3c',
+                'tags': 'EM GMM gaussian-mixture-models',
+                'extra': '''GMM SPECIFIC APPLICATION:
+
+E-STEP (Compute Responsibilities):
+• γ_ik = probability that point i belongs to Gaussian k
+• Uses current parameters (μ_k, Σ_k, π_k)
+• Bayes rule: posterior ∝ prior × likelihood
+
+M-STEP (Update Parameters):
+• π_k = (1/n)Σ_i γ_ik  [mixing coefficient]
+• μ_k = Σ_i(γ_ik × x_i) / Σ_i γ_ik  [weighted mean]
+• Σ_k = Σ_i γ_ik(x_i - μ_k)(x_i - μ_k)^T / Σ_i γ_ik  [weighted covariance]
+
+KEY DIFFERENCES FROM K-MEANS:
+• Soft assignments (probabilities) vs hard assignments
+• Updates covariances (cluster shapes) not just means
+• Can model elliptical clusters of different sizes
+
+INITIALIZATION: Often use K-means results as starting point
+
+CONVERGENCE: Monitor log-likelihood increase'''
+            },
+            {
+                'front': 'What are the convergence properties of the EM algorithm?',
+                'back': 'EM guarantees monotonic increase in likelihood, converges to local maximum, but not necessarily global maximum',
+                'formula': '\\\\[L(\\\\theta^{(t+1)}) \\\\geq L(\\\\theta^{(t)})\\\\]',
+                'source': 'Exam Q3d',
+                'tags': 'EM convergence properties',
+                'extra': '''CONVERGENCE GUARANTEES:
+
+1. MONOTONIC INCREASE: Log-likelihood never decreases
+   • Each iteration improves (or maintains) the solution
+   • Mathematical proof via Jensen's inequality
+
+2. LOCAL MAXIMUM: Converges to local optimum
+   • NOT guaranteed to find global maximum
+   • Result depends on initialization
+
+3. CONVERGENCE CRITERIA:
+   • Change in log-likelihood < ε (e.g., 10^-6)
+   • Change in parameters < threshold
+   • Maximum iterations reached
+
+4. RATE OF CONVERGENCE:
+   • Linear convergence near optimum (can be slow)
+   • May need many iterations for high precision
+
+5. PRACTICAL ISSUES:
+   • Multiple random initializations recommended
+   • Can get stuck in poor local maxima
+   • Singularities possible (e.g., Gaussian collapses to single point)
+
+IMPROVEMENTS:
+• Use K-means++ for initialization
+• Add regularization to prevent singularities
+• Monitor for degenerate solutions'''
             },
             {
                 'front': 'What is the M-step in EM algorithm?',
@@ -521,6 +672,71 @@ CONNECTIONS:
 • Neural network with single layer + sigmoid activation'''
             },
             {
+                'front': 'How is Maximum Likelihood Estimation used in logistic regression?',
+                'back': 'MLE finds parameters that maximize probability of observed labels given features',
+                'formula': '\\\\[L(\\\\beta) = \\\\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}\\\\]',
+                'source': 'Exam Q7c',
+                'tags': 'logistic-regression MLE maximum-likelihood',
+                'extra': '''MLE FOR LOGISTIC REGRESSION:
+
+1. LIKELIHOOD FUNCTION:
+   • For binary classification
+   • p_i = σ(β^T x_i) = probability of class 1
+   • Product over all samples
+
+2. LOG-LIKELIHOOD (easier to work with):
+   ℓ(β) = Σ[y_i log p_i + (1-y_i)log(1-p_i)]
+   • Converts product to sum
+   • Same as negative cross-entropy loss!
+
+3. OPTIMIZATION:
+   • No closed-form solution (unlike linear regression)
+   • Use gradient ascent (or descent on negative log-likelihood)
+   • Gradient: ∇ℓ = X^T(y - p)
+
+4. CONNECTION TO LOSS:
+   • Minimizing cross-entropy = maximizing likelihood
+   • Probabilistic interpretation of classification
+
+5. REGULARIZATION:
+   • Add penalty: ℓ(β) - λ||β||^2
+   • MAP estimation with Gaussian prior'''
+            },
+            {
+                'front': 'How does gradient descent work specifically for logistic regression?',
+                'back': 'Updates weights using gradient of log-likelihood, which simplifies to prediction error times features',
+                'formula': '\\\\[\\\\beta_{new} = \\\\beta_{old} + \\\\alpha X^T(y - p)\\\\]',
+                'source': 'Exam Q7d',
+                'tags': 'logistic-regression gradient-descent optimization',
+                'extra': '''GRADIENT DESCENT FOR LOGISTIC REGRESSION:
+
+1. GRADIENT DERIVATION:
+   • Start with negative log-likelihood loss
+   • Take derivative w.r.t. β
+   • Beautiful result: ∇L = -X^T(y - p)
+   • Same form as linear regression!
+
+2. UPDATE RULE:
+   • β = β - α∇L = β + αX^T(y - p)
+   • (y - p) is prediction error
+   • X^T weights errors by features
+
+3. ALGORITHM:
+   for epoch in range(n_epochs):
+       p = sigmoid(X @ β)  # predictions
+       error = y - p       # residuals
+       β = β + α * X.T @ error  # update
+
+4. STOCHASTIC VARIANT:
+   • Use mini-batches instead of full dataset
+   • Faster convergence, helps escape local minima
+
+5. CONVERGENCE:
+   • Convex problem → global optimum guaranteed
+   • Learning rate crucial: too large → oscillation
+   • Can use adaptive rates (Adam, RMSprop)'''
+            },
+            {
                 'front': 'What is the softmax function?',
                 'back': 'Generalization of logistic function for multi-class classification',
                 'formula': '\\[p_i = \\frac{\\exp(w_i^T x)}{\\sum_j \\exp(w_j^T x)}\\]',
@@ -623,6 +839,41 @@ SUPPORT VECTORS: Critical points that define the solution - removing them change
                 'extra': 'ξᵢ are slack variables allowing soft margin'
             },
             {
+                'front': 'What is soft margin SVM and why is it needed?',
+                'back': 'Allows some misclassifications using slack variables when data is not linearly separable',
+                'formula': '\\\\[\\\\min \\\\frac{1}{2}||w||^2 + C\\\\sum \\\\xi_i\\\\]',
+                'source': 'Exam Q8d',
+                'tags': 'SVM soft-margin slack-variables',
+                'extra': '''SOFT MARGIN MOTIVATION:
+
+1. REAL DATA PROBLEMS:
+   • Rarely perfectly separable
+   • Outliers can drastically affect hard margin
+   • Noise in labels
+
+2. SLACK VARIABLES (ξ_i):
+   • Allow points to violate margin
+   • ξ_i = 0: correctly classified beyond margin
+   • 0 &lt; ξ_i &lt; 1: correctly classified within margin
+   • ξ_i &gt; 1: misclassified
+
+3. TRADE-OFF PARAMETER C:
+   • Large C: Less tolerance for errors (approaches hard margin)
+   • Small C: More tolerance, simpler boundary
+   • Cross-validation to choose optimal C
+
+4. MODIFIED CONSTRAINTS:
+   y_i(w^Tx_i + b) ≥ 1 - ξ_i  (instead of ≥ 1)
+   ξ_i ≥ 0
+
+5. INTERPRETATION:
+   • First term: Maximize margin
+   • Second term: Minimize classification errors
+   • C controls balance
+
+6. ROBUSTNESS: Less sensitive to outliers than hard margin'''
+            },
+            {
                 'front': 'What is the kernel trick in SVM?',
                 'back': 'Technique to implicitly map data to higher-dimensional space for non-linear classification',
                 'formula': '',
@@ -655,6 +906,41 @@ SUPPORT VECTORS: Critical points that define the solution - removing them change
                 'source': 'ML Fundamentals',
                 'tags': 'naive-bayes laplace-smoothing',
                 'extra': 'α is smoothing parameter (usually 1), |V| is vocabulary size'
+            },
+            {
+                'front': 'How do you calculate Naive Bayes predictions step-by-step?',
+                'back': 'Compute prior P(C), likelihoods P(x_i|C) for each feature, multiply together, normalize',
+                'formula': '\\\\[P(C|X) \\\\propto P(C) \\\\prod_{i=1}^n P(x_i|C)\\\\]',
+                'source': 'Exam Q9d',
+                'tags': 'naive-bayes calculation example',
+                'extra': '''STEP-BY-STEP CALCULATION EXAMPLE:
+
+Problem: Classify email as spam/ham given words
+Features: "free", "money", "hello"
+
+1. CALCULATE PRIORS:
+   P(spam) = 40/100 = 0.4
+   P(ham) = 60/100 = 0.6
+
+2. CALCULATE LIKELIHOODS (with Laplace α=1):
+   P("free"|spam) = (15+1)/(40+2) = 0.38
+   P("free"|ham) = (5+1)/(60+2) = 0.10
+   P("money"|spam) = (10+1)/(40+2) = 0.26
+   P("money"|ham) = (2+1)/(60+2) = 0.05
+   P("hello"|spam) = (5+1)/(40+2) = 0.14
+   P("hello"|ham) = (30+1)/(60+2) = 0.50
+
+3. COMPUTE POSTERIORS (unnormalized):
+   P(spam|"free,money,hello") ∝ 0.4 × 0.38 × 0.26 × 0.14 = 0.0055
+   P(ham|"free,money,hello") ∝ 0.6 × 0.10 × 0.05 × 0.50 = 0.0015
+
+4. NORMALIZE:
+   P(spam|X) = 0.0055/(0.0055+0.0015) = 0.79
+   P(ham|X) = 0.0015/(0.0055+0.0015) = 0.21
+
+5. CLASSIFY: Predict spam (higher probability)
+
+LOG-SPACE TRICK: Use log probabilities to avoid underflow'''
             },
             
             # Bias-Variance Tradeoff (15 points)
